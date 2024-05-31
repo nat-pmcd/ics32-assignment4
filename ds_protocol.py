@@ -1,9 +1,10 @@
-"""
-Protocol to receive and send raw data via socket.
-"""
 # JONATHAN PATRICK CHEN
 # JONATPC2@UCI.EDU
 # 80752008
+
+"""
+Protocol to receive and send raw data via socket.
+"""
 
 import json
 import socket

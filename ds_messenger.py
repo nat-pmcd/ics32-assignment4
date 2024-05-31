@@ -1,9 +1,10 @@
-"""
-Contains the DirectMessenger class, to manage sending and receiving data with the dsu server.
-"""
 # JONATHAN PATRICK CHEN
 # JONATPC2@UCI.EDU
 # 80752008
+
+"""
+Contains the DirectMessenger class, to manage sending and receiving data with the dsu server.
+"""
 
 import socket
 from time import time
