@@ -7,7 +7,7 @@ from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QInputDialog, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
-from ProfileManager import ProfileManager, AdminPrinter
+from ds_profile_manager import ProfileManager, AdminPrinter
 from ds_messenger import DirectMessenger as Client
 
 # HEADER LOCALIZATION
