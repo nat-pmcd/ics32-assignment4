@@ -19,23 +19,26 @@ from pathlib import Path
 
 class DsuFileError(Exception):
     """
-    DsuFileError is a custom exception handler that you should catch in your own code. It
-    is raised when attempting to load or save Profile objects to file the system.
+    DsuFileError is a custom exception handler that you should catch in your
+    own code. It is raised when attempting to load or save Profile objects to
+    file the system.
     """
 
 
 class DsuProfileError(Exception):
     """
-    DsuProfileError is a custom exception handler that you should catch in your own code. It
-    is raised when attempting to deserialize a dsu file to a Profile object.
+    DsuProfileError is a custom exception handler that you should catch in
+    your own code. It is raised when attempting to deserialize a dsu file to
+    a Profile object.
     """
 
 
 class Post(dict):
     """ 
-    The Post class is responsible for working with individual user posts. It currently 
-    supports two features: A timestamp property that is set upon instantiation and 
-    when the entry object is set and an entry property that stores the post message.
+    The Post class is responsible for working with individual user posts.
+    It currently  supports two features: A timestamp property that is set
+    upon instantiation and when the entry object is set and an entry property
+    that stores the post message.
 
     """
     def __init__(self, entry: str = None, timestamp: float = 0):
@@ -76,16 +79,16 @@ class Post(dict):
         """
         return self._timestamp
 
-    # The property method is used to support get and set capability for entry and
-    # time values. When the value for entry is changed, or set, the timestamp field is
-    # updated to the current time.
+    # The property method is used to support get and set capability for entry
+    # and time values. When the value for entry is changed, or set, the
+    # timestamp field is updated to the current time.
     entry = property(get_entry, set_entry)
     timestamp = property(get_time, set_time)
 
 
 class Friend(dict):
     """
-    The Friend class is responsible for working with the friends a user may have.
+    The Friend class is responsible for managing messages with a friend.
     """
     def __init__(self, name: str = None,
                  sent_messages: list[Post] = None,
@@ -95,7 +98,8 @@ class Friend(dict):
         self.set_in_msgs(recv_messages)
 
         # Wondering how the hell this black magic works now...
-        dict.__init__(self, name=self._name, in_posts=self._in_msgs, out_posts=self._out_msgs)
+        dict.__init__(self, name=self._name,
+                      in_posts=self._in_msgs, out_posts=self._out_msgs)
 
     def get_name(self) -> str:
         """
@@ -143,15 +147,16 @@ class Friend(dict):
 
 class Profile(dict):
     """
-    The Profile class exposes the properties required to join an ICS 32 DSU server. You 
-    will need to use this class to manage the information provided by each new user 
-    created within your program for a2. Pay close attention to the properties and 
-    functions in this class as you will need to make use of each of them in your program.
+    The Profile class exposes the properties required to join an ICS 32 DSU
+    server. You will need to use this class to manage the information provided
+    by each new user created within your program for a2. Pay close attention to
+    the properties and functions in this class as you will need to make use of
+    each of them in your program.
 
-    When creating your program you will need to collect user input for the properties 
-    exposed by this class. A Profile class should ensure that a username and password 
-    are set, but contains no conventions to do so. You should make sure that your code 
-    verifies that required properties are set.
+    When creating your program you will need to collect user input for the
+    properties exposed by this class. A Profile class should ensure that a
+    username and password are set, but contains no conventions to do so. You
+    should make sure that your code verifies that required properties are set.
 
     """
 
@@ -165,21 +170,23 @@ class Profile(dict):
 
     def add_post(self, post: Post) -> None:
         """
-        add_post accepts a Post object as parameter and appends it to the posts list. Posts 
-        are stored in a list object in the order they are added. So if multiple Posts objects 
-        are created, but added to the Profile in a different order, it is possible for the 
-        list to not be sorted by the Post.timestamp property. So take caution as to how you 
-        implement your add_post code.
+        add_post accepts a Post object as parameter and appends it to the posts
+        list. Posts are stored in a list object in the order they are added. So
+        if multiple Posts objects are created, but added to the Profile in a
+        different order, it is possible for the list to not be sorted by the 
+        Post.timestamp property. So take caution as to how you implement your 
+        add_post code.
         """
         self._posts.append(post)
 
     def del_post(self, index: int) -> bool:
         """
-        del_post removes a Post at a given index and returns True if successful and False if 
-        an invalid index was supplied. 
+        del_post removes a Post at a given index and returns True if successful
+        and False if an invalid index was supplied. 
 
-        To determine which post to delete you must implement your own search operation on 
-        the posts returned from the get_posts function to find the correct index.
+        To determine which post to delete you must implement your own search
+        operation on the posts returned from the get_posts function to find the
+        correct index.
         """
         try:
             del self._posts[index]
@@ -189,28 +196,30 @@ class Profile(dict):
 
     def get_posts(self) -> list[Post]:
         """
-        get_posts returns the list object containing all posts that have been added to the 
-        Profile object
+        get_posts returns the list object containing all posts that have been
+        added to the Profile object
         """
         return self._posts
 
     def add_friend(self, friend: Friend) -> None:
         """
-        add_friend accepts a Friend object as parameter and appends it to the friend list. Friends 
-        are stored in a list object in the order they are added. So if multiple Friend objects 
-        are created, but added to the Profile in a different order, it is possible for the 
-        list to not be sorted by the Post.timestamp property. So take caution as to how you 
+        add_friend accepts a Friend object as parameter and appends it to the
+        friend list. Friends are stored in a list object in the order they are
+        added. So if multiple Friend objects are created, but added to the
+        Profile in a different order, it is possible for the list to not be
+        sorted by the Post.timestamp property. So take caution as to how you 
         implement your add_friend code.
         """
         self._friends.append(friend)
 
     def del_friend(self, index: int) -> bool:
         """
-        del_friend removes a Friend at a given index and returns True if successful and False if 
-        an invalid index was supplied. 
+        del_friend removes a Friend at a given index and returns True if
+        successful and False if an invalid index was supplied. 
 
-        To determine which friend to delete you must implement your own search operation on 
-        the posts returned from the get_friend function to find the correct index.
+        To determine which friend to delete you must implement your own
+        search operation on the posts returned from the get_friend function to
+        find the correct index.
         """
         try:
             del self._friends[index]
@@ -220,15 +229,15 @@ class Profile(dict):
 
     def get_friends(self) -> list[Friend]:
         """
-        get_friends returns the list object containing all friends that have been added to the 
-        Profile object
+        get_friends returns the list object containing all friends that have
+        been added to the Profile object
         """
         return self._posts
 
     def save_profile(self, path: str) -> None:
         """
-        save_profile accepts an existing dsu file to save the current instance of Profile 
-        to the file system.
+        save_profile accepts an existing dsu file to save the current instance
+        of Profile to the file system.
 
         Example usage:
 
@@ -245,14 +254,14 @@ class Profile(dict):
                 json.dump(self.__dict__, f)
                 f.close()
             except Exception as ex:
-                raise DsuFileError("Error while attempting to process the DSU file.", ex) from ex
+                raise DsuFileError("Error when reading DSU file.", ex) from ex
         else:
             raise DsuFileError("Invalid DSU file path or type")
 
     def load_profile(self, path: str) -> None:
         """
-        load_profile will populate the current instance of Profile with data stored in a 
-        DSU file.
+        load_profile will populate the current instance of Profile with data
+        stored in a DSU file.
 
         Example usage: 
 
@@ -275,9 +284,11 @@ class Profile(dict):
                 if '_friends' in obj:  # testing if we have any friends :(
                     for friend_obj in obj['_friends']:
                         name = friend_obj['name']
-                        sent_messsages = self._get_json_posts(friend_obj['_out_msgs'])
-                        recv_messages = self._get_json_posts(friend_obj['_in_msgs'])
-                        friend = Friend(name, sent_messsages, recv_messages)
+                        out_obj = friend_obj['_out_msgs']
+                        in_obj = friend_obj['_in_msgs']
+                        out_messsages = self._get_json_posts(out_obj)
+                        in_messages = self._get_json_posts(in_obj)
+                        friend = Friend(name, out_messsages, in_messages)
                         self._friends.append(friend)
                 f.close()
             except Exception as ex:

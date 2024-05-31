@@ -16,7 +16,8 @@ Connection = namedtuple('Connection', ['socket', 'send', 'recv'])
 
 def init(sock: socket) -> Connection:
     """
-    Given a socket, return a connection tuple with socket, send, and receive attributes.
+    Given a socket, return a connection tuple with socket, send, and receive
+    attributes.
 
     Parameters
     --------
@@ -64,7 +65,7 @@ def listen(conn: Connection) -> Response:  # wrapper for receive response
         return _read_response(conn)
     except TimeoutError as exc:
         print(f"Unexpected {exc} when listening: {type(exc)}")
-        return Response(None, "error", "Server timed out when connecting!", None)
+        return Response(None, "error", "Server timed out!", None)
 
 
 def _extract_json(json_msg: str) -> Response:
@@ -89,7 +90,7 @@ def _extract_json(json_msg: str) -> Response:
         print("Json cannot be decoded.")
     except KeyError:
         print("Json isn't complete.")
-    return Response(response, "error", "Client error when extracting json", None)
+    return Response(response, "error", "Client error extracting json", None)
 
 
 def close_conn(conn: Connection) -> bool:

@@ -3,7 +3,8 @@
 # 80752008
 
 """
-Contains the DirectMessenger class, to manage sending and receiving data with the dsu server.
+Contains the DirectMessenger class, to manage sending
+and receiving data with the dsu server.
 """
 
 import socket
@@ -39,8 +40,8 @@ class DirectMessenger:
 
     def _connect_to_server(self) -> bool:
         """
-        Attempts to establish a socket connection using current server/port values.
-        Creates socket attribute and returns if successful.
+        Attempts to establish a socket connection using current server/port
+        values. Creates socket attribute and returns if successful.
         """
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -54,8 +55,8 @@ class DirectMessenger:
 
     def _send_command(self, command: str) -> dsp.Response:
         """
-        Attempts to connect to a server and send json string `command` if successful.
-        Returns the response sent by the server.
+        Attempts to connect to a server and send json string `command` if
+        successful. Returns the response sent by the server.
 
         Parameters
         --------
@@ -96,9 +97,9 @@ class DirectMessenger:
 
     def login(self, username: str, password: str) -> bool:
         """
-        Sends the login command to the server, to set token attribute for authentication.
-        Returns if successful or not.
-        If not connected to server, attempts to connect first.
+        Sends the login command to the server, to set token attribute for
+        authentication. Returns if successful or not. If not connected to 
+        server, attempts to connect first.
 
         Parameters
         --------
@@ -175,7 +176,8 @@ class DirectMessenger:
 
     def send(self, message: str, recipient: str) -> bool:
         """
-        Sends the directmessage command to the server. Returns if successful or not.
+        Sends the directmessage command to the server.
+        Returns if successful or not.
         
         Parameters
         --------
@@ -199,14 +201,14 @@ class DirectMessenger:
 
     def retrieve_new(self) -> list[DirectMessage]:
         """
-        Wrapper for _get_dms. Gets all new dms from server and returns in a list
-        of DirectMessages
+        Wrapper for _get_dms. Gets all new dms from server and returns
+        in a list of DirectMessages
         """
         return self._get_dms(True)
 
     def retrieve_all(self) -> list[DirectMessage]:
         """
-        Wrapper for _get_dms. Gets all new dms from server and returns in a list
-        of DirectMessages
+        Wrapper for _get_dms. Gets all new dms from server and returns
+        in a list of DirectMessages
         """
         return self._get_dms()
