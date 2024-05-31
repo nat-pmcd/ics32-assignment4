@@ -1,5 +1,5 @@
 """
-
+Contains the DirectMessenger class, to manage sending and receiving data with the dsu server.
 """
 # JONATHAN PATRICK CHEN
 # JONATPC2@UCI.EDU
@@ -12,7 +12,7 @@ PORT = 6000
 SERVER = "localhost"
 
 
-class Client:
+class DirectMessenger:
     """
     Manages server connection, authentication, and sending/receiving messages.
     Requires server (string) and port (int)
@@ -30,7 +30,7 @@ class Client:
         self.token = None
         self.socket = None
 
-    def connect_to_server(self) -> bool:
+    def _connect_to_server(self) -> bool:
         """
         Attempts to establish a socket connection using current server/port values.
         Creates socket attribute and returns if successful.
@@ -40,11 +40,12 @@ class Client:
             address = self.server, self.port
             self.socket.connect(address)
             return True
-        except Exception as exc:
+        except (OSError, TimeoutError) as exc:
             print(f"Unexpected {exc}: {type(exc)}")
+            self.socket = None
             return False
 
-    def send_command(self, command: str) -> str:
+    def _send_command(self, command: str) -> str:
         """
         Attempts to connect to a server and send json string `command` if successful.
         Returns the response sent by the server.
@@ -54,7 +55,7 @@ class Client:
         command : str
             json command to send to the server.
         """
-        self.connect_to_server()
+        self._connect_to_server()
         if not self.socket:
             print("Could not connect to server.")
             return None
@@ -62,17 +63,35 @@ class Client:
         conn = dsp.init(self.socket)
         resp = dsp.send_command(conn, command)
         print("Sent", command, "and received", resp)
-        dsp.exit(conn)
+        dsp.close_conn(conn)
 
         if resp.type == "error":
             print(f"Error occured when sending command! {resp.message}")
 
         return resp
 
+    def _verify_nonblank(self, content: str, target: str = "string") -> bool:
+        """
+        Given a string, returns if string is nonblank and not pure whitespace.
+
+        Parameters
+        --------
+        content : str
+            The string to verify
+        target : str
+            If string fails, prints no valid target.
+        """
+        if isinstance(content, str) and not content.isspace() and content:
+            return True
+        else:
+            print(f"No {target} bio to send.")
+            return False
+
     def login(self, username: str, password: str) -> bool:
         """
         Sends the login command to the server, to set token attribute for authentication.
         Returns if successful or not.
+        If not connected to server, attempts to connect first.
 
         Parameters
         --------
@@ -81,20 +100,23 @@ class Client:
         password : str
             The `password` of the account we're logging into
         """
+        if not self.socket and not self._connect_to_server():
+            return False
+
         join_command = (r'{"join": {"username": "' +
                         username +
                         r'","password": "' +
                         password +
                         r'","token":""}}')
 
-        response = self.send_command(join_command)
+        response = self._send_command(join_command)
 
         if response.type != "error":
             self.token = response.token
             return True
         return False
 
-    def update_bio(self, bio: str):
+    def update_bio(self, bio: str) -> bool:
         """
         Sends the bio command to the server. Returns if successful or not.
 
@@ -109,11 +131,11 @@ class Client:
                        bio +
                        r'","timestamp": "' +
                        str(time()) + r'"}}')
-        response = self.send_command(bio_command)
+        response = self._send_command(bio_command)
 
         return response.type != "error"
 
-    def publish_post(self, msg: str):
+    def publish_post(self, msg: str) -> bool:
         """
         Sends the publish command to the server. Returns if successful or not.
 
@@ -129,31 +151,49 @@ class Client:
                            r'","timestamp": "' +
                            str(time()) +
                            r'"}}')
-        response = self.send_command(publish_command)
+        response = self._send_command(publish_command)
 
         return response.type != "error"
 
+    def send_dm(self, username: str, message: str) -> bool:
+        """
+        Sends the directmessage command to the server. Returns if successful or not.
+        
+        Parameters
+        --------
+        username : str
+            The user who we intend on sending the direct message to.
+        message : str
+            The `message` we intend on sending to `username`.
+        """
+        raise NotImplementedError
 
-def send(server, port: int, username: str, password: str, message: str, bio: str = None) -> bool:
-    """
-    Function creates a new Client object. Checks for bio and message args.
-    If exists and nonblank, Client object will send code to run it.
-    """
-    client = Client(server, port)
-    if not client.connect_to_server():
-        print("Failed to connect to server for some reason!")
-        return False
-    if not client.login(username, password):
-        print("Failed to login for some reason!")
-        return False
+    def send(self, **kwargs) -> bool:
+        """
+        Given keyword arguments, sends multiple commands to the connected server.
+        Returns if successful or not.
 
-    # we catch any non string message or bio
-    if isinstance(message, str) and not message.isspace() and message:
-        client.publish_post(message)
-    else:
-        print("No valid post to send.")
-    if isinstance(bio, str) and not bio.isspace() and bio:
-        client.update_bio(bio)
-    else:
-        print("No valid bio to send.")
-    return True
+        Parameters
+        --------
+        post : str
+            A string for the server to publish as a `post`.
+        bio : str
+            A string for the server to publish as a `bio`.
+        message : tuple (username : str, message : str)
+            A `message` string for the server to send to `username`
+        """
+        status = True
+        if "post" in kwargs:
+            post = kwargs["post"]
+            if self.verify_nonblank(post, "post"):
+                status = self.publish_post(post)
+        if "bio" in kwargs:
+            bio = kwargs["bio"]
+            if self.verify_nonblank(bio, "bio"):
+                status = self.update_bio(bio)
+        if "message" in kwargs:
+            username, message = kwargs["message"]
+            if self._verify_nonblank(username, "user") and self.verify_nonblank(message, "message"):
+                status = self.send_dm(username, message)
+
+        return status

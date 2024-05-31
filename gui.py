@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QInputDialog, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
 from ProfileManager import ProfileManager, AdminPrinter
-from ds_client import send
+from ds_messenger import DirectMessenger as Client
 
 # HEADER LOCALIZATION
 TEXT_HEADER_PROFILE = 'Profiles'
@@ -337,7 +337,9 @@ class ProfileWindow(QWidget, AdminPrinter):
                     index = ProfileWindow.get_index(parent, item)
                     post = pm.index_post(index)
                     server, port, username, password = pm.get_server_info()
-                    result = send(server, port, username, password, post[0])
+                    client = Client(server, port)
+                    if client.login(username, password):
+                        client.send(post=post[0])
             case 4:   # publishing a bio
                 def handler():
                     if not pm.verify_joinable():  # this disgusting code gets a server
@@ -358,9 +360,13 @@ class ProfileWindow(QWidget, AdminPrinter):
                             return
                     server, port, username, password = pm.get_server_info()
                     bio = pm.get_profile_info()[2]
-                    if not send(server, port, username, password, message = None, bio=bio):  # even if bio is empty, it won't send empty bio
-                        pm.update_server_info(reset=True)  # if we fail to connect, set dsuserver back to nothing
-                        self.log(f"failed to join server {server}:{port}", "join button handler", True, username, password)
+                    client = Client(server, port)
+                    if client.login(username, password):
+                        if not client.send(bio=bio):
+                            # if we fail to connect, set dsuserver back to nothing
+                            pm.update_server_info(reset=True)
+                            self.log(f"failed to join server {server}:{port}",
+                                     "join button handler", True, username, password)
                     else:
                         items = get_all_items(parent)
                         for i in items:
