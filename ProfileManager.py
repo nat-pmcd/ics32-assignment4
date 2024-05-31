@@ -2,9 +2,9 @@
 # JONATPC2@UCI.EDU
 # 80752008
 
-from Profile import Profile, Post
 from pathlib import Path
 from datetime import datetime
+from ds_profile import Profile, Post
 
 DIRECTORY_NAME = "dsu_profiles"
 
