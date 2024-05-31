@@ -1,3 +1,8 @@
+"""
+Main entry point to run ics distributed social network.
+Create new profiles and posts locally, connect to a dsu server to
+publish posts and message other users.
+"""
 # JONATHAN PATRICK CHEN
 # JONATPC2@UCI.EDU
 # 80752008
