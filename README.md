@@ -1,4 +1,11 @@
 # ics32-assignment3
+Current todo:
+Modify ds_profile.py to be able to access and edit messages.
+Update ds_profile_manager.py to get all messages, and add messages.
+Update ds_gui.py to have a gui.
+
+Write tests for ds_protocol.py
+Write tests for ds_messenger.py
 
 ## ds_protocol.py
 Should now also support directmessage

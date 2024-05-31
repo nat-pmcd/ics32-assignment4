@@ -83,31 +83,65 @@ class Post(dict):
     timestamp = property(get_time, set_time)
 
 
-class Friend:
+class Friend(dict):
     """
     The Friend class is responsible for working with the friends a user may have.
     """
     def __init__(self, name: str = None,
                  sent_messages: list[Post] = None,
                  recv_messages: list[Post] = None) -> None:
-        self.name = name
-        self.sent_messages = sent_messages
-        self.recv_messages = recv_messages
+        self._name = name
+        self.set_out_msgs(sent_messages)
+        self.set_in_msgs(recv_messages)
+
+        # Wondering how the hell this black magic works now...
+        dict.__init__(self, name=self._name, in_posts=self._in_msgs, out_posts=self._out_msgs)
 
     def get_name(self) -> str:
         """
-        Returns the entry property as a string
+        Returns the name property as a string
         """
-        return self.name
+        return self._name
 
-    def get_messages(self) -> str:
+    def set_name(self, usn: str):
         """
-        Returns the entry property as a string
+        Sets the name property to argument
         """
-        return self._entry
+        self._name = usn
+        dict.__setitem__(self, 'name', usn)
+
+    def get_out_msgs(self) -> list[Post]:
+        """
+        Returns the list of your messages
+        """
+        return self._out_msgs
+
+    def get_in_msgs(self) -> list[Post]:
+        """
+        Returns the list of their messages
+        """
+        return self._in_msgs
+
+    def set_out_msgs(self, out_msgs: list[Post]):
+        """
+        Returns the list of your messages
+        """
+        self._out_msgs = out_msgs.copy()
+        dict.__setitem__(self, 'timestamp', out_msgs.copy())
+
+    def set_in_msgs(self, in_msgs: list[Post]):
+        """
+        Returns the list of their messages
+        """
+        self._in_msgs = in_msgs.copy()
+        dict.__setitem__(self, 'timestamp', in_msgs.copy())
+
+    name = property(get_name, set_name)
+    out_msgs = property(get_out_msgs, set_out_msgs)
+    in_msgs = property(get_in_msgs, set_in_msgs)
 
 
-class Profile:
+class Profile(dict):
     """
     The Profile class exposes the properties required to join an ICS 32 DSU server. You 
     will need to use this class to manage the information provided by each new user 
@@ -241,8 +275,8 @@ class Profile:
                 if '_friends' in obj:  # testing if we have any friends :(
                     for friend_obj in obj['_friends']:
                         name = friend_obj['name']
-                        sent_messsages = self._get_json_posts(friend_obj['sent_messages'])
-                        recv_messages = self._get_json_posts(friend_obj['recv_messages'])
+                        sent_messsages = self._get_json_posts(friend_obj['_out_msgs'])
+                        recv_messages = self._get_json_posts(friend_obj['_in_msgs'])
                         friend = Friend(name, sent_messsages, recv_messages)
                         self._friends.append(friend)
                 f.close()
