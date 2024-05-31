@@ -25,7 +25,7 @@ class AdminPrinter:
             if len(args) > 0:
                 print("\nAdditional objects are provided:\n")
                 for i in args:
-                    print(i + "\n")
+                    print(str(i) + "\n")
 
 
 class ProfileManager(AdminPrinter):
