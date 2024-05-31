@@ -127,7 +127,7 @@ class ProfileManager(AdminPrinter):
             return profile
         except Exception as exc:
             self.log("failure when accessing profile", "pm access profile", True, type(exc), exc)
-            return False
+            return None
 
     def get_server_info(self) -> tuple:
         pf = self.profile

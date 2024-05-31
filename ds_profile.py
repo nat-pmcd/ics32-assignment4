@@ -223,11 +223,12 @@ class Profile:
                 self.dsuserver = obj['dsuserver']
                 self.bio = obj['bio']
                 self._posts += self._get_json_posts(obj['_posts'])
-                for friend_obj in obj['_friends']:
-                    name = friend_obj['name']
-                    messsages = self._get_json_posts(friend_obj['messages'])
-                    friend = Friend(name, messsages)
-                    self._friends.append(friend)
+                if '_friends' in obj:  # testing if we have any friends :(
+                    for friend_obj in obj['_friends']:
+                        name = friend_obj['name']
+                        messsages = self._get_json_posts(friend_obj['messages'])
+                        friend = Friend(name, messsages)
+                        self._friends.append(friend)
                 f.close()
             except Exception as ex:
                 raise DsuProfileError(ex) from ex
