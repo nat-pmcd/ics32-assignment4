@@ -87,8 +87,9 @@ class Friend:
     """
     The Friend class is responsible for working with the friends a user may have.
     """
-    def __init__(self) -> None:
-        pass
+    def __init__(self, name: str = None, messages: list[Post] = None) -> None:
+        self.name = name
+        self.messages = messages
 
 
 class Profile:
@@ -111,6 +112,7 @@ class Profile:
         self.password = password
         self.bio = ''
         self._posts = []
+        self._friends = []
 
     def add_post(self, post: Post) -> None:
         """
@@ -139,6 +141,37 @@ class Profile:
     def get_posts(self) -> list[Post]:
         """
         get_posts returns the list object containing all posts that have been added to the 
+        Profile object
+        """
+        return self._posts
+
+    def add_friend(self, friend: Friend) -> None:
+        """
+        add_friend accepts a Friend object as parameter and appends it to the friend list. Friends 
+        are stored in a list object in the order they are added. So if multiple Friend objects 
+        are created, but added to the Profile in a different order, it is possible for the 
+        list to not be sorted by the Post.timestamp property. So take caution as to how you 
+        implement your add_friend code.
+        """
+        self._friends.append(friend)
+
+    def del_friend(self, index: int) -> bool:
+        """
+        del_friend removes a Friend at a given index and returns True if successful and False if 
+        an invalid index was supplied. 
+
+        To determine which friend to delete you must implement your own search operation on 
+        the posts returned from the get_friend function to find the correct index.
+        """
+        try:
+            del self._friends[index]
+            return True
+        except IndexError:
+            return False
+
+    def get_friends(self) -> list[Friend]:
+        """
+        get_friends returns the list object containing all friends that have been added to the 
         Profile object
         """
         return self._posts
@@ -189,11 +222,24 @@ class Profile:
                 self.password = obj['password']
                 self.dsuserver = obj['dsuserver']
                 self.bio = obj['bio']
-                for post_obj in obj['_posts']:
-                    post = Post(post_obj['entry'], post_obj['timestamp'])
-                    self._posts.append(post)
+                self._posts += self._get_json_posts(obj['_posts'])
+                for friend_obj in obj['_friends']:
+                    name = friend_obj['name']
+                    messsages = self._get_json_posts(friend_obj['messages'])
+                    friend = Friend(name, messsages)
+                    self._friends.append(friend)
                 f.close()
             except Exception as ex:
                 raise DsuProfileError(ex) from ex
         else:
             raise DsuFileError()
+
+    def _get_json_posts(self, obj):
+        """
+        Given a readable like object from json, return all posts from it.
+        """
+        posts = []
+        for post_obj in obj:
+            post = Post(post_obj['entry'], post_obj['timestamp'])
+            posts.append(post)
+        return posts.copy()
