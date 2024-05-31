@@ -7,7 +7,7 @@ from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QInputDialog, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
-from ds_profile_manager import ProfileManager, AdminPrinter
+from ds_profile_manager import ProfileManager, AdminPrinter, DsuManager
 from ds_messenger import DirectMessenger as Client
 
 # HEADER LOCALIZATION
@@ -116,8 +116,8 @@ class UniquePrompt(UserPrompt):
 class ProfileMenu(QWidget, AdminPrinter):
     def __init__(self):
         super().__init__()
-        self.profile_manager = ProfileManager()
-        self.profiles = self.profile_manager.fetch_profiles()
+        self.dsu_manager = DsuManager()
+        self.profiles = self.dsu_manager.fetch_profiles()
         self.loaded_windows = {}
         self.fuck = [self.admin]
 
@@ -174,12 +174,12 @@ class ProfileMenu(QWidget, AdminPrinter):
             if password:
                 self.create_row(username)
                 self.profiles.append(username)
-                self.profile_manager.create_profile(username, password)  # FIXME: We should give feedback to the user if successful or not
+                self.dsu_manager.create_profile(username, password)  # FIXME: We should give feedback to the user if successful or not
 
     def generate_button_handler(self, type: int, value: str, item: QTreeWidgetItem = None) -> Callable[..., None]:  # generate functions to load and delete profiles
         parent = self.treeWidget
         profiles = self.profiles
-        pm = self.profile_manager
+        pm = self.dsu_manager
         loaded_windows = self.loaded_windows
         fuck = self.fuck
         match type:
@@ -198,7 +198,7 @@ class ProfileMenu(QWidget, AdminPrinter):
                         self.log(f"Unable to load {value}.", "access profile button handler")
             case 2:
                 def handler():
-                    if pm.delete_profile(value):
+                    if pm.delete_profile(value, self.admin):
                         index = parent.indexOfTopLevelItem(item)  # get the index of the current item, aka the row
                         self.log(f"successfully deleted {value} at {index}", "delete profile button handler")
                         parent.takeTopLevelItem(index)  # via the tree widget parent, remove at that index
