@@ -339,7 +339,7 @@ class ProfileWindow(QWidget, AdminPrinter):
                     server, port, username, password = pm.get_server_info()
                     client = Client(server, port)
                     if client.login(username, password):
-                        client.send(post=post[0])
+                        client.publish_post(post[0])
             case 4:   # publishing a bio
                 def handler():
                     if not pm.verify_joinable():  # this disgusting code gets a server
@@ -362,7 +362,7 @@ class ProfileWindow(QWidget, AdminPrinter):
                     bio = pm.get_profile_info()[2]
                     client = Client(server, port)
                     if client.login(username, password):
-                        if not client.send(bio=bio):
+                        if not client.update_bio(bio):
                             # if we fail to connect, set dsuserver back to nothing
                             pm.update_server_info(reset=True)
                             self.log(f"failed to join server {server}:{port}",

@@ -32,7 +32,7 @@ def init(sock: socket) -> Connection:
         return None
 
 
-def send_command(conn: Connection, command: str) -> str:
+def send_command(conn: Connection, command: str) -> Response:
     """
     Acts as a wrapper to send the command via conn.
     Once sends the command, awaits and returns server response.

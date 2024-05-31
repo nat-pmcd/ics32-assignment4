@@ -12,6 +12,12 @@ PORT = 6000
 SERVER = "localhost"
 
 
+class DirectMessage:
+    """
+    temp docstring
+    """
+
+
 class DirectMessenger:
     """
     Manages server connection, authentication, and sending/receiving messages.
@@ -45,7 +51,7 @@ class DirectMessenger:
             self.socket = None
             return False
 
-    def _send_command(self, command: str) -> str:
+    def _send_command(self, command: str) -> dsp.Response:
         """
         Attempts to connect to a server and send json string `command` if successful.
         Returns the response sent by the server.
@@ -155,45 +161,51 @@ class DirectMessenger:
 
         return response.type != "error"
 
-    def send_dm(self, username: str, message: str) -> bool:
+    def _get_dms(self, only_new: bool = False) -> list[DirectMessage]:
+        """
+        Gets directmessages from connected server and returns list.
+        
+        Parameters
+        --------
+        only_new : bool
+            If True, returns only new messages.
+        """
+        raise NotImplementedError
+
+    def send(self, message: str, recipient: str) -> bool:
         """
         Sends the directmessage command to the server. Returns if successful or not.
         
         Parameters
         --------
-        username : str
-            The user who we intend on sending the direct message to.
         message : str
-            The `message` we intend on sending to `username`.
+            The `message` we intend on sending to `recipient`.
+        recipient : str
+            THe `recipient` who we intend on sending `message` to.
         """
-        raise NotImplementedError
+        dm_command = (r'{"token":"' +
+                           self.token +
+                           r'", "directmessage": {"entry": "' +
+                           message +
+                           r'","recipient": "' +
+                           recipient +
+                           r'","timestamp": "' +
+                           str(time()) +
+                           r'"}}')
+        response = self._send_command(dm_command)
 
-    def send(self, **kwargs) -> bool:
+        return response.type != "error"
+
+    def retrieve_new(self) -> list[DirectMessage]:
         """
-        Given keyword arguments, sends multiple commands to the connected server.
-        Returns if successful or not.
-
-        Parameters
-        --------
-        post : str
-            A string for the server to publish as a `post`.
-        bio : str
-            A string for the server to publish as a `bio`.
-        message : tuple (username : str, message : str)
-            A `message` string for the server to send to `username`
+        Wrapper for _get_dms. Gets all new dms from server and returns in a list
+        of DirectMessages
         """
-        status = True
-        if "post" in kwargs:
-            post = kwargs["post"]
-            if self.verify_nonblank(post, "post"):
-                status = self.publish_post(post)
-        if "bio" in kwargs:
-            bio = kwargs["bio"]
-            if self.verify_nonblank(bio, "bio"):
-                status = self.update_bio(bio)
-        if "message" in kwargs:
-            username, message = kwargs["message"]
-            if self._verify_nonblank(username, "user") and self.verify_nonblank(message, "message"):
-                status = self.send_dm(username, message)
+        return self._get_dms(True)
 
-        return status
+    def retrieve_all(self) -> list[DirectMessage]:
+        """
+        Wrapper for _get_dms. Gets all new dms from server and returns in a list
+        of DirectMessages
+        """
+        return self._get_dms()
