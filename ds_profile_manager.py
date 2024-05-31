@@ -19,7 +19,7 @@ class AdminPrinter:
     def __init__(self, admin: bool = False) -> None:
         self.admin = admin
 
-    def log(self, text: str, source: str = "n/a", error: bool = False, *args) -> None:
+    def log(self, text: str, source: str, *args, error: bool = False) -> None:
         '''
         if currently in admin mode, print. otherwise, do nothing
         '''
@@ -93,7 +93,7 @@ class ProfileManager(AdminPrinter):
             self.posts = self.profile.get_posts()
             return True
         except Exception as exc:
-            self.log("failure when opening profile", "pm init profile", True, type(exc), exc)
+            self.log("failure when opening profile", "pm init profile", type(exc), exc, error=True)
             return False
 
     def get_profile_info(self) -> tuple:
@@ -112,7 +112,7 @@ class ProfileManager(AdminPrinter):
             self.profile.save_profile(path)
             return True
         except Exception as exc:
-            self.log("failure when saving profile", "pm save profile", True, type(exc), exc)
+            self.log("failure when saving profile", "pm save profile", type(exc), exc, error=True)
             return False
 
     def edit_bio(self, content: str) -> bool:
@@ -124,7 +124,7 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing bio", "pm edit bio", True, type(exc), exc)
+            self.log("failure when editing bio", "pm edit bio", type(exc), exc, error=True)
             return False
 
     def edit_usn(self, content: str) -> bool:
@@ -148,7 +148,7 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing pw", "pm edit pw", True, type(exc), exc)
+            self.log("failure when editing pw", "pm edit pw", type(exc), exc, error=True)
             return False
 
     def access_profile(self, usn: str) -> Profile:
@@ -161,7 +161,7 @@ class ProfileManager(AdminPrinter):
             profile.load_profile(path)
             return profile
         except Exception as exc:
-            self.log("failure when accessing profile", "pm access profile", True, type(exc), exc)
+            self.log("failure accessing profile", "pm access profile", type(exc), exc, error=True)
             return None
 
     def get_server_info(self) -> tuple:
@@ -180,7 +180,7 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure updating server info", "pm update serv info", True, type(exc), exc)
+            self.log("failure updating server", "pm update serv info", type(exc), exc, error=True)
             return False
 
     def create_post(self, content: str) -> str:  # we return the timestamp of post
@@ -202,7 +202,7 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing post", "pm edit post", True, type(exc), exc)
+            self.log("failure when editing post", "pm edit post", type(exc), exc, error=True)
             return False
 
     def del_post(self, index: int) -> bool:
@@ -214,7 +214,7 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when deleting post", "pm del post", True, type(exc), exc)
+            self.log("failure when deleting post", "pm del post", type(exc), exc, error=True)
             return False
 
     def index_post(self, index: int) -> tuple:
@@ -268,12 +268,12 @@ def create_profile(usn: str = None, pw: str = None,
         if profile is None:
             profile = Profile(None, usn, pw)
         path = get_path(profile.username)
-        logger.log(f"attempting to save at {path}", "pm create profile")
+        logger.log(f"attempting to save at {path}", "create profile")
         path.touch()
         profile.save_profile(path)
         return True
     except Exception as exc:
-        logger.log("failure when creating profile", "pm create profile", True, type(exc), exc)
+        logger.log("failure when creating profile", "create profile", type(exc), exc, error=True)
         return False
 
 
@@ -287,7 +287,7 @@ def delete_profile(usn: str, admin: bool = False) -> bool:
         path.unlink()
         return True
     except Exception as exc:
-        logger.log("failure when deleting profile", "pm delete profile", True, type(exc), exc)
+        logger.log("failure when deleting profile", "delete profile", type(exc), exc, error=True)
         return False
 
 
