@@ -87,9 +87,24 @@ class Friend:
     """
     The Friend class is responsible for working with the friends a user may have.
     """
-    def __init__(self, name: str = None, messages: list[Post] = None) -> None:
+    def __init__(self, name: str = None,
+                 sent_messages: list[Post] = None,
+                 recv_messages: list[Post] = None) -> None:
         self.name = name
-        self.messages = messages
+        self.sent_messages = sent_messages
+        self.recv_messages = recv_messages
+
+    def get_name(self) -> str:
+        """
+        Returns the entry property as a string
+        """
+        return self.name
+
+    def get_messages(self) -> str:
+        """
+        Returns the entry property as a string
+        """
+        return self._entry
 
 
 class Profile:
@@ -226,8 +241,9 @@ class Profile:
                 if '_friends' in obj:  # testing if we have any friends :(
                     for friend_obj in obj['_friends']:
                         name = friend_obj['name']
-                        messsages = self._get_json_posts(friend_obj['messages'])
-                        friend = Friend(name, messsages)
+                        sent_messsages = self._get_json_posts(friend_obj['sent_messages'])
+                        recv_messages = self._get_json_posts(friend_obj['recv_messages'])
+                        friend = Friend(name, sent_messsages, recv_messages)
                         self._friends.append(friend)
                 f.close()
             except Exception as ex:
