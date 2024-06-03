@@ -131,13 +131,13 @@ class ProfileMenu(QWidget, AdminPrinter):
         add_row_button = QPushButton(TEXT_BUTTON_CREATE_PROFILE)
         add_row_button.clicked.connect(self.create_profile_handler)
 
-        admin_button = QPushButton(TEXT_BUTTON_ADMIN)
-        admin_button.clicked.connect(self.admin_toggle_handler)
+        #  admin_button = QPushButton(TEXT_BUTTON_ADMIN) DEPRECATED ADMN BUTTON
+        #  admin_button.clicked.connect(self.admin_toggle_handler)
 
         layout = QGridLayout(self)
         layout.addWidget(add_row_button, 0, 0)
-        layout.addWidget(admin_button, 0, 2)
-        layout.addWidget(self.treeWidget, 1, 0, 1, 3)
+        #  layout.addWidget(admin_button, 0, 2) DEPRACATED
+        layout.addWidget(self.treeWidget, 1, 0, 1, 2)
         self.setLayout(layout)
 
     def create_row(self, name: str) -> None:  # given a name, create an additional row in the list of profiles
@@ -150,7 +150,7 @@ class ProfileMenu(QWidget, AdminPrinter):
         delete_button.clicked.connect(self.generate_button_handler(2, name, item))
         self.treeWidget.setItemWidget(item, 2, delete_button)
 
-    def admin_toggle_handler(self) -> None:
+    def admin_toggle_handler(self) -> None:  # DEPRECATED, admin button has been disabled
         print(f'Toggling admin, it is now {"off" if self.admin else "on"}')
         print("Note, will need to refresh any profile viewers to see changes.")
         self.admin = not self.admin
@@ -241,8 +241,8 @@ class ProfileWindow(QWidget, AdminPrinter):
         self.join_button = QPushButton(text)
         self.join_button.clicked.connect(self.generate_button_handler(4))
 
-        edit_login_button = QPushButton(TEXT_BUTTON_MODIFY_LOGIN)
-        edit_login_button.clicked.connect(self.edit_login_handler)
+        #  edit_login_button = QPushButton(TEXT_BUTTON_MODIFY_LOGIN) DEPRECATED
+        #  edit_login_button.clicked.connect(self.edit_login_handler)
 
         for i, j in self.profile_manager.fetch_posts():  # for every post in the profile, create a new row in the table
             self.log(f"Creating row with content {i} and time {j}", "profile viewer init")
@@ -255,7 +255,7 @@ class ProfileWindow(QWidget, AdminPrinter):
         layout.addWidget(add_row_button, 1, 0)
         layout.addWidget(self.join_button, 1, 1)
         layout.addWidget(edit_bio_button, 1, 2)
-        if self.admin: layout.addWidget(edit_login_button, 1, 3)
+        #  if self.admin: layout.addWidget(edit_login_button, 1, 3) DEPRECATED
         layout.addWidget(self.treeWidget, 2, 0, 1, 4 if self.admin else 3)
         self.setLayout(layout)
 
