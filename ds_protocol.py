@@ -87,10 +87,10 @@ def _extract_json(json_msg: str) -> Response:
 
         return Response(response, message_type, message, token)
     except json.JSONDecodeError:
-        print("Json cannot be decoded.")
+        print("Json cannot be decoded.", json_msg)
     except KeyError:
         print("Json isn't complete.")
-    return Response(response, "error", "Client error extracting json", None)
+    return Response(json_msg, "error", "Client error extracting json", None)
 
 
 def close_conn(conn: Connection) -> bool:
@@ -119,6 +119,7 @@ def _read_response(conn: Connection) -> Response:
     try:
         response = conn.recv.readline()[:-1]
         print("received response", response)
+
         return _extract_json(response)
     except Exception as exc:
         print(f"Unexpected {exc}: {type(exc)}")
