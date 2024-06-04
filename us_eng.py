@@ -12,13 +12,15 @@ class DsuEnglish:
     '''
     WINDOW_MAIN = 'DSU Client'
 
-    TITLE_PROFILE = 'Profiles'
-    HEADER_ACCESS_PROFILE = 'Access Profiles'
-    HEADER_DELETE_PROFILE = 'Delete Profiles'
+    TITLE_PROFILE = 'Username'
+    HEADER_ACCESS_PROFILE = 'Profile'
+    HEADER_DELETE_PROFILE = 'Delete'
+    HEADER_MESSAGES_PROFILE = 'Chats'
     BUTTON_ADMIN = 'Toggle Debug'
 
     BUTTON_CREATE_PROFILE = 'Create Profile'
-    BUTTON_ACCESS_PROFILE = 'Access'
+    BUTTON_ACCESS_PROFILE = 'Profile'
+    BUTTON_MESSAGES_PROFILE = 'Chats'
     BUTTON_DELETE_PROFILE = 'Delete'
 
 

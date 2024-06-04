@@ -3,8 +3,8 @@
 # 80752008
 
 """
-Contains the DirectMessenger class, to manage sending
-and receiving data with the dsu server.
+Contains the DirectMessenger class to send and receive DMs,
+and PostPublisher to send bio and posts to server.
 """
 
 import socket
