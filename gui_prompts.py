@@ -9,29 +9,14 @@ Temp docstring
 '''
 
 from PySide6.QtWidgets import QInputDialog
-from us_eng import (POPUP_HEADER_CREATE_PROFILE,  # pylint does not like
-                    POPUP_PROMPT_GET_NAME,        # wildcard import...
-                    POPUP_PROMPT_GET_NAME_BLANK,
-                    POPUP_PROMPT_GET_NAME_DUPLICATE,
-                    POPUP_PROMPT_GET_PW,
-                    POPUP_PROMPT_GET_PW_BLANK,
-                    POPUP_HEADER_CREATE_POST,
-                    POPUP_PROMPT_GET_CONTENT,
-                    POPUP_PROMPT_GET_CONTENT_BLANK,
-                    POPUP_HEADER_EDIT_BIO,
-                    POPUP_PROMPT_GET_BIO,
-                    POPUP_PROMPT_GET_BIO_BLANK,
-                    POPUP_HEADER_EDIT_POST,
-                    POPUP_PROMPT_GET_EDIT,
-                    POPUP_PROMPT_GET_EDIT_BLANK,
-                    POPUP_HEADER_SERVER,
-                    POPUP_PROMPT_GET_IP,
-                    POPUP_PROMPT_GET_IP_BLANK,
-                    POPUP_PROMPT_GET_PORT,
-                    POPUP_PROMPT_GET_PORT_BLANK)
+import us_eng
 
 DEFAULT_IP = "168.235.86.101"
 DEFAULT_PORT = 3021
+TxtDsu = us_eng.DsuEnglish
+TxtPrf = us_eng.ProfileEnglish
+TxtMsg = us_eng.MsgEnglish
+TxtPmt = us_eng.PromptsEnglish
 
 class UserPrompt(QInputDialog):
     """
@@ -50,7 +35,7 @@ class UserPrompt(QInputDialog):
         temp docstring
         '''
         self.setLabelText(self.prompt_text)
-        self.setTextValue(self.default_text)
+        self.setTextValue(str(self.default_text))
         while True:
             if self.exec():
                 if self._check_valid():
@@ -85,10 +70,10 @@ class UniquePrompt(UserPrompt):
     Temp docstring
     '''
     def __init__(self, window_name: str, prompt_text: str,
-                 empty_text: str, dupe_text: str, lst: tuple = None) -> None:
+                 empty_text: str, dupe_text: str) -> None:
         super().__init__(window_name, prompt_text, empty_text)
         self.dupe_text = dupe_text
-        self.dupe_list = [].copy() if lst is not None else lst
+        self.dupe_list = tuple()
 
     def set_duplicate_list(self, lst: tuple) -> None:
         '''
@@ -119,11 +104,11 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UniquePrompt(POPUP_HEADER_CREATE_PROFILE,
-                              POPUP_PROMPT_GET_NAME,
-                              POPUP_PROMPT_GET_NAME_BLANK,
-                              POPUP_PROMPT_GET_NAME_DUPLICATE,
-                              other_usernames)
+        prompt = UniquePrompt(TxtPmt.POPUP_HEADER_CREATE_PROFILE,
+                              TxtPmt.POPUP_PROMPT_GET_NAME,
+                              TxtPmt.POPUP_PROMPT_GET_NAME_BLANK,
+                              TxtPmt.POPUP_PROMPT_GET_NAME_DUPLICATE)
+        prompt.set_duplicate_list(other_usernames)
         return prompt
 
 
@@ -131,9 +116,9 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UserPrompt(POPUP_HEADER_CREATE_PROFILE,
-                            POPUP_PROMPT_GET_PW,
-                            POPUP_PROMPT_GET_PW_BLANK)
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_CREATE_PROFILE,
+                            TxtPmt.POPUP_PROMPT_GET_PW,
+                            TxtPmt.POPUP_PROMPT_GET_PW_BLANK)
         return prompt
 
 
@@ -141,9 +126,9 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UserPrompt(POPUP_HEADER_CREATE_POST,
-                            POPUP_PROMPT_GET_CONTENT,
-                            POPUP_PROMPT_GET_CONTENT_BLANK)
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_CREATE_POST,
+                            TxtPmt.POPUP_PROMPT_GET_CONTENT,
+                            TxtPmt.POPUP_PROMPT_GET_CONTENT_BLANK)
         return prompt
 
 
@@ -151,9 +136,9 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UserPrompt(POPUP_HEADER_EDIT_BIO,
-                            POPUP_PROMPT_GET_BIO,
-                            POPUP_PROMPT_GET_BIO_BLANK)
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_EDIT_BIO,
+                            TxtPmt.POPUP_PROMPT_GET_BIO,
+                            TxtPmt.POPUP_PROMPT_GET_BIO_BLANK)
         return prompt
 
 
@@ -181,9 +166,9 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UserPrompt(POPUP_HEADER_EDIT_POST,
-                            POPUP_PROMPT_GET_EDIT + past_post,
-                            POPUP_PROMPT_GET_EDIT_BLANK)
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_EDIT_POST,
+                            TxtPmt.POPUP_PROMPT_GET_EDIT + past_post,
+                            TxtPmt.POPUP_PROMPT_GET_EDIT_BLANK)
         prompt.set_default_text(past_post)
         return prompt
 
@@ -191,9 +176,9 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UserPrompt(POPUP_HEADER_SERVER,
-                            POPUP_PROMPT_GET_IP + DEFAULT_IP,
-                            POPUP_PROMPT_GET_IP_BLANK)
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_SERVER,
+                            TxtPmt.POPUP_PROMPT_GET_IP + DEFAULT_IP,
+                            TxtPmt.POPUP_PROMPT_GET_IP_BLANK)
         prompt.set_default_text(DEFAULT_IP)
         return prompt
 
@@ -201,8 +186,9 @@ class PromptGenerator:
         '''
         temp docstring
         '''
-        prompt = UserPrompt(POPUP_HEADER_SERVER,
-                            POPUP_PROMPT_GET_PORT + str(DEFAULT_PORT),
-                            POPUP_PROMPT_GET_PORT_BLANK)
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_SERVER,
+                            TxtPmt.POPUP_PROMPT_GET_PORT +
+                            str(DEFAULT_PORT),
+                            TxtPmt.POPUP_PROMPT_GET_PORT_BLANK)
         prompt.set_default_text(DEFAULT_PORT)
         return prompt

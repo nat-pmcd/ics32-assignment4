@@ -3,65 +3,93 @@
 # 80752008
 
 '''
-Temp docstring
+Localization for GUI in English
 '''
 
-# HEADERS
-TITLE_PROFILE = 'Profiles'
-HEADER_ACCESS_PROFILE = 'Access Profiles'
-HEADER_DELETE_PROFILE = 'Delete Profiles'
-BUTTON_ADMIN = 'Toggle Debug'
-BUTTON_EDIT_LOGIN = 'Modify Login'
+class DsuEnglish:
+    '''
+    Contains all English text inside the DSU Manager window.
+    '''
+    WINDOW_MAIN = 'DSU Client'
 
-WINDOW_MAIN = 'DSU Client'
-WINDOW_PROFILE = 'DSU Profile'
-WINDOW_MSG = 'DSU Messenger'
+    TITLE_PROFILE = 'Profiles'
+    HEADER_ACCESS_PROFILE = 'Access Profiles'
+    HEADER_DELETE_PROFILE = 'Delete Profiles'
+    BUTTON_ADMIN = 'Toggle Debug'
 
-# MANAGE PROFILE
-BUTTON_CREATE_PROFILE = 'Create Profile'
-BUTTON_ACCESS_PROFILE = 'Access'
-BUTTON_DELETE_PROFILE = 'Delete'
+    BUTTON_CREATE_PROFILE = 'Create Profile'
+    BUTTON_ACCESS_PROFILE = 'Access'
+    BUTTON_DELETE_PROFILE = 'Delete'
 
-# CREATE PROFILE
-POPUP_HEADER_CREATE_PROFILE = 'Create a profile'
-POPUP_PROMPT_GET_NAME = 'Enter a username'
-POPUP_PROMPT_GET_NAME_BLANK = 'Username cannot be empty'
-POPUP_PROMPT_GET_NAME_DUPLICATE = "Username already used"
-POPUP_PROMPT_GET_PW = 'Enter a password'
-POPUP_PROMPT_GET_PW_BLANK = 'Password cannot be empty'
 
-# BIO
-BUTTON_EDIT_BIO = 'Edit bio'
-BUTTON_PUBLISH_BIO = 'Publish bio'
-BUTTON_PUBLISH_BIO_UNJOINED = 'Join server'
+class ProfileEnglish:
+    '''
+    Contains all English text inside the DSU Profile window.
+    '''
+    LABEL_NAME = 'Username: '
+    LABEL_PW = 'Password: '
+    LABEL_BIO = 'Bio: '
 
-POPUP_HEADER_EDIT_BIO = 'Edit bio'
-POPUP_PROMPT_GET_BIO = 'Describe yourself here!'
-POPUP_PROMPT_GET_BIO_BLANK = 'Bio cannot be empty!'
+    HEADER_POST = 'Post'
+    HEADER_TIME = 'Timestamp'
+    HEADER_EDIT = 'Edit'
+    HEADER_PUBLISH = 'Publish'
+    HEADER_DELETE = 'Delete'
 
-# GET SERVER
-POPUP_HEADER_SERVER = 'Select server'
-POPUP_PROMPT_GET_IP = 'Enter the server IP address. Default '
-POPUP_PROMPT_GET_IP_BLANK = 'IP address cannot be blank!'
-POPUP_PROMPT_GET_PORT = 'Enter the server port. Default '
-POPUP_PROMPT_GET_PORT_BLANK = 'Port cannot be blank!'
+    WINDOW_PROFILE = 'DSU Profile'
+    BUTTON_EDIT_LOGIN = 'Modify Login'
 
-# USER POST
-BUTTON_CREATE_POST = 'Create Post'
-BUTTON_EDIT_POST = 'Edit'
-BUTTON_PUBLISH_POST = 'Publish'
-BUTTON_DELETE_POST = 'Delete'
+    BUTTON_EDIT_BIO = 'Edit bio'
+    BUTTON_PUBLISH_BIO = 'Publish bio'
+    BUTTON_PUBLISH_BIO_UNJOINED = 'Join server'
 
-POPUP_HEADER_CREATE_POST = 'Create a post'
-POPUP_PROMPT_GET_CONTENT = 'Write your thoughts here!'
-POPUP_PROMPT_GET_CONTENT_BLANK = 'Cannot make an empty post!'
+    BUTTON_CREATE_POST = 'Create Post'
+    BUTTON_EDIT_POST = 'Edit'
+    BUTTON_PUBLISH_POST = 'Publish'
+    BUTTON_DELETE_POST = 'Delete'
 
-# EDIT POST
-POPUP_HEADER_EDIT_POST = 'Edit this post'
-POPUP_PROMPT_GET_EDIT = 'Previous post:\n'
-POPUP_PROMPT_GET_EDIT_BLANK = POPUP_PROMPT_GET_CONTENT_BLANK
 
-# ADD FRIEND
-POPUP_ADD_FRIEND = 'Add a friend!'
-POPUP_PROMPT_GET_FRIEND = 'Enter friend name.'
-POPUP_PROMPT_GET_FRIEND_BLANK = "You can't be friends with nobody!"
+class MsgEnglish:
+    '''
+    Contains all English text inside the DSU Messenger window.
+    '''
+    WINDOW_MSG = 'DSU Messenger'
+
+
+class PromptsEnglish:
+    '''
+    Contains all English text inside any prompt generated.
+    '''
+    # CREATE PROFILE
+    POPUP_HEADER_CREATE_PROFILE = 'Create a profile'
+    POPUP_PROMPT_GET_NAME = 'Enter a username'
+    POPUP_PROMPT_GET_NAME_BLANK = 'Username cannot be empty'
+    POPUP_PROMPT_GET_NAME_DUPLICATE = "Username already used"
+    POPUP_PROMPT_GET_PW = 'Enter a password'
+    POPUP_PROMPT_GET_PW_BLANK = 'Password cannot be empty'
+
+    # BIO
+    POPUP_HEADER_EDIT_BIO = 'Edit bio'
+    POPUP_PROMPT_GET_BIO = 'Describe yourself here!'
+    POPUP_PROMPT_GET_BIO_BLANK = 'Bio cannot be empty!'
+
+    # GET SERVER
+    POPUP_HEADER_SERVER = 'Select server'
+    POPUP_PROMPT_GET_IP = 'Enter the server IP address. Default '
+    POPUP_PROMPT_GET_IP_BLANK = 'IP address cannot be blank!'
+    POPUP_PROMPT_GET_PORT = 'Enter the server port. Default '
+    POPUP_PROMPT_GET_PORT_BLANK = 'Port cannot be blank!'
+
+    POPUP_HEADER_CREATE_POST = 'Create a post'
+    POPUP_PROMPT_GET_CONTENT = 'Write your thoughts here!'
+    POPUP_PROMPT_GET_CONTENT_BLANK = 'Cannot make an empty post!'
+
+    # EDIT POST
+    POPUP_HEADER_EDIT_POST = 'Edit this post'
+    POPUP_PROMPT_GET_EDIT = 'Previous post:\n'
+    POPUP_PROMPT_GET_EDIT_BLANK = POPUP_PROMPT_GET_CONTENT_BLANK
+
+    # ADD FRIEND
+    POPUP_ADD_FRIEND = 'Add a friend!'
+    POPUP_PROMPT_GET_FRIEND = 'Enter friend name.'
+    POPUP_PROMPT_GET_FRIEND_BLANK = "You can't be friends with nobody!"
