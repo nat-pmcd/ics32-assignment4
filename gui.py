@@ -142,10 +142,10 @@ class ProfileWindow(QWidget):
         edit_bio_button.clicked.connect(self.edit_bio_handler)
 
         self.pub_bio_button = QPushButton(TxtPrf.BUTTON_PUBLISH_BIO)
-        self.pub_bio_button.clicked.connect(self.publish_bio_handler)
+        self.pub_bio_button.clicked.connect(self._publish_bio_handler)
 
         #  edit_login_button = QPushButton(BUTTON_EDIT_LOGIN) DEPRECATED
-        #  edit_login_button.clicked.connect(self.edit_login_handler)
+        #  edit_login_button.clicked.connect(self._edit_login_handler)
 
         for i, j in self.profile_manager.fetch_posts():  # for every post in the profile, create a new row in the table
             self.profile_manager.log(f"Creating row with content {i} and time {j}", "profile viewer init")
@@ -171,7 +171,7 @@ class ProfileWindow(QWidget):
         self.post_table.setItemWidget(item, 2, edit_button)
 
         publish_button = QPushButton(TxtPrf.BUTTON_PUBLISH_POST, self)
-        publish_button.clicked.connect(self.publish_bio_handler)
+        publish_button.clicked.connect(self._generate_button_handler(3, item=item))
         self.post_table.setItemWidget(item, 3, publish_button)
 
         delete_button = QPushButton(TxtPrf.BUTTON_DELETE_POST, self)
@@ -191,9 +191,9 @@ class ProfileWindow(QWidget):
             self.profile_manager.edit_bio(bio)
             self.bio_label.setText("Bio: " + bio)
 
-    def publish_bio_handler(self) -> bool:
+    def _publish_bio_handler(self) -> bool:
         bio = self.profile_manager.get_profile_info()[2]
-        client = self.login_server(self.profile_manager)
+        client = self._login_server(self.profile_manager)
         if not client:
             return False
         return client.update_bio(bio)
@@ -201,7 +201,7 @@ class ProfileWindow(QWidget):
             # if we fail to connect, set dsuserver back to nothing
 
 
-    def login_server(self, pm: ProfileManager) -> Client:
+    def _login_server(self, pm: ProfileManager) -> Client:
         if not pm.verify_joinable():
             host = pg().get_host_prompt().get_response()
             if not host:
@@ -222,7 +222,7 @@ class ProfileWindow(QWidget):
             return None
         return client
 
-    def edit_login_handler(self) -> None:
+    def _edit_login_handler(self) -> None:
         username = pg().get_edit_username_prompt().get_response()
         if username:
             self.profile_manager.edit_usn(username)
@@ -231,37 +231,40 @@ class ProfileWindow(QWidget):
         if password:
             self.profile_manager.edit_pw(password)
 
-        self.profile_manager.log("successfully made changes, reload whole gui to view", "modify usn/pw button handler")
+        self.profile_manager.log("made changes, reload program",
+                                 "modify usn/pw button handler")
 
     def _generate_button_handler(self, version: int,
-                                 item: QTreeWidgetItem = None) -> Callable[..., None]:
+                                 item: QTreeWidgetItem) -> Callable[..., None]:
         parent = self.post_table
         pm = self.profile_manager
 
         match version:
             case 1:  # editing a post
-                def handler():
+                def edit_handler():
                     index = parent.indexOfTopLevelItem(item)
                     post = pm.index_post(index)
                     content = pg().get_edit_post_prompt(post[0]).get_response()
                     if content:
                         pm.edit_post(index, content)
                         parent.setItemWidget(item, 0, QLabel(content))
-
+                return edit_handler
             case 2:  # deleting a post
-                def handler():
+                def delete_handler():
                     index = parent.indexOfTopLevelItem(item)
-                    parent.takeTopLevelItem(index)  # via the tree widget parent, remove at that index
+                    parent.takeTopLevelItem(index)  # remove at that index
                     pm.del_post(index)
-                    self.profile_manager.log(f"successfully post at {index}", "delete post button handler")
+                    self.profile_manager.log(f"successfully post at {index}",
+                                             "delete post button handler")
+                return delete_handler
             case 3:  # publishing a post
-                def handler():  # first fetch mandatory send commands
+                def publish_handler():  # first fetch mandatory send commands
                     index = parent.indexOfTopLevelItem(item)
                     post = pm.index_post(index)
-                    client = self.login_server(pm)
+                    client = self._login_server(pm)
                     if client:
                         client.publish_post(post[0])
-        return handler
+                    return publish_handler
 
 def main_gui():
     app = QApplication([])

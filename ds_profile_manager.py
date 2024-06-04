@@ -12,29 +12,6 @@ from ds_profile import Profile, Post
 
 DIRECTORY_NAME = "dsu_profiles"
 
-class AdminPrinter:
-    """
-    temp docstring
-    """
-    def __init__(self, admin: bool = False) -> None:
-        self.admin = admin
-
-    def log(self, text: str, source: str, *args, error: bool = False) -> None:
-        '''
-        if currently in admin mode, print. otherwise, do nothing
-        '''
-        if self.admin:
-            if error:
-                header = ("Unexpected error has occured",
-                          f"from <{source}> as follows:\n")
-            else:
-                header = f"Debug log from <{source}> as follows:\n"
-            print(header + text)
-            if len(args) > 0:
-                print("\nAdditional objects are provided:\n")
-                for i in args:
-                    print(str(i) + "\n")
-
 
 class ProfileUtils:
     '''
@@ -78,36 +55,34 @@ class ProfileUtils:
 
 
     def _create_profile(self, usn: str = None, pw: str = None,
-                       profile: Profile = None, admin: bool = False) -> bool:
+                       profile: Profile = None) -> bool:
         """
         temp docstring
         """
-        logger = AdminPrinter(admin)
         try:
             if profile is None:
                 profile = Profile(None, usn, pw)
             path = self._get_path(profile.username)
-            logger.log(f"attempting to save at {path}", "create profile")
+            self.log(f"attempting to save at {path}", "create profile")
             path.touch()
             profile.save_profile(path)
             return True
         except Exception as exc:
-            logger.log("failure when creating profile",
+            self.log("failure when creating profile",
                        "create profile", type(exc), exc, error=True)
             return False
 
 
-    def _delete_profile(self, usn: str, admin: bool = False) -> bool:
+    def _delete_profile(self, usn: str) -> bool:
         """
         temp docstring
         """
-        logger = AdminPrinter(admin)
         try:
             path = self._get_path(usn)
             path.unlink()
             return True
         except Exception as exc:
-            logger.log("failure when deleting profile",
+            self.log("failure when deleting profile",
                        "delete profile", type(exc), exc, error=True)
             return False
 
@@ -147,13 +122,13 @@ class DsuManager(ProfileUtils):
         """
         temp docstring
         """
-        return self._create_profile(usn, pw, profile, self.admin)
+        return self._create_profile(usn, pw, profile)
 
-    def delete_profile(self, usn: str, admin: bool = False):
+    def delete_profile(self, usn: str):
         """
         if currently in admin mode, print. otherwise, do nothing
         """
-        return self._delete_profile(usn, admin)
+        return self._delete_profile(usn)
 
     def fetch_profiles(self) -> list[str]:
         """
@@ -225,7 +200,7 @@ class ProfileManager(ProfileUtils):
         if content not in self._fetch_profiles():
             self._delete_profile(self.profile.username)
             self.profile.username = content
-            self._create_profile(profile=self.profile, admin=self.admin)
+            self._create_profile(profile=self.profile)
             return True
         self.log("Did not change usn, would override file", "pm edit usn func")
         return False
