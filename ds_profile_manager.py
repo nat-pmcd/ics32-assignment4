@@ -8,7 +8,7 @@ temp docstring
 
 from pathlib import Path
 from datetime import datetime
-from ds_profile import Profile, Post
+from ds_profile import Profile, Post, Friend
 
 DIRECTORY_NAME = "dsu_profiles"
 
@@ -160,13 +160,6 @@ class ProfileManager(ProfileUtils):
                      "pm init profile", type(exc), exc, error=True)
             return False
 
-    def get_profile_info(self) -> tuple:
-        """
-        temp docstring
-        """
-        pf = self.profile
-        return pf.username, pf.password, pf.bio
-
     def save_profile(self) -> bool:
         """
         temp docstring
@@ -180,6 +173,49 @@ class ProfileManager(ProfileUtils):
                      "pm save profile", type(exc), exc, error=True)
             return False
 
+    def access_profile(self, usn: str) -> Profile:
+        """
+        temp docstring
+        """
+        path = self._get_path(usn)
+        try:
+            profile = Profile()
+            profile.load_profile(path)
+            return profile
+        except Exception as exc:
+            self.log("failure accessing profile",
+                     "pm access profile", type(exc), exc, error=True)
+            return None
+
+    def get_profile_info(self) -> tuple:
+        """
+        temp docstring
+        """
+        pf = self.profile
+        return pf.username, pf.password, pf.bio
+
+    def get_server_info(self) -> tuple:
+        """
+        temp docstring
+        """
+        pf = self.profile
+        return pf.dsuserver[0], pf.dsuserver[1], pf.username, pf.password
+
+    def update_server_info(self, host: str = None,
+                           port: int = None, reset: bool = False):
+        """
+        temp docstring
+        """
+        try:
+            self.profile.dsuserver = None if reset else (host, int(port))
+            self.save_profile()
+            return True
+        except Exception as exc:
+            self.log("failure updating server", "pm update serv info",
+                     type(exc), exc, error=True)
+            return False
+
+class PostManager(ProfileManager):
     def edit_bio(self, content: str) -> bool:
         """
         temp docstring
@@ -216,41 +252,6 @@ class ProfileManager(ProfileUtils):
         except Exception as exc:
             self.log("failure when editing pw",
                      "pm edit pw", type(exc), exc, error=True)
-            return False
-
-    def access_profile(self, usn: str) -> Profile:
-        """
-        temp docstring
-        """
-        path = self._get_path(usn)
-        try:
-            profile = Profile()
-            profile.load_profile(path)
-            return profile
-        except Exception as exc:
-            self.log("failure accessing profile",
-                     "pm access profile", type(exc), exc, error=True)
-            return None
-
-    def get_server_info(self) -> tuple:
-        """
-        temp docstring
-        """
-        pf = self.profile
-        return pf.dsuserver[0], pf.dsuserver[1], pf.username, pf.password
-
-    def update_server_info(self, host: str = None,
-                           port: int = None, reset: bool = False):
-        """
-        temp docstring
-        """
-        try:
-            self.profile.dsuserver = None if reset else (host, int(port))
-            self.save_profile()
-            return True
-        except Exception as exc:
-            self.log("failure updating server", "pm update serv info",
-                     type(exc), exc, error=True)
             return False
 
     def create_post(self, content: str) -> str:
@@ -313,3 +314,19 @@ class ProfileManager(ProfileUtils):
         self.log(f"accessing dsuserver and got {self.profile.dsuserver}",
                  "pm verify joinable")
         return self.profile.dsuserver is not None
+
+class DmManager(ProfileManager):
+    def __init__(self, username: str, admin: bool = False) -> None:
+        super().__init__(username, admin)
+
+    def get_friends(self) -> list[Friend]:
+        raise NotImplementedError
+
+    def add_friend(self, friend: Friend) -> bool:
+        raise NotImplementedError
+
+    def load_texts(self, friend: Friend) -> list[Post]:
+        raise NotImplementedError
+
+    def add_text(self, text: Post) -> bool:
+        raise NotImplementedError

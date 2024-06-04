@@ -12,7 +12,7 @@ from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
-from ds_profile_manager import ProfileManager, DsuManager
+from ds_profile_manager import PostManager, DsuManager
 from ds_messenger import PostPublisher as Client
 from gui_prompts import PromptGenerator as pg
 from gui_prompts import TxtDsu, TxtPrf  # , MsgText
@@ -154,7 +154,7 @@ class ProfileWindow(QWidget):
         super().__init__()
         self.admin = admin
 
-        self.profile_manager = ProfileManager(name, self.admin)
+        self.profile_manager = PostManager(name, self.admin)
         if not self.profile_manager.loaded:
             self.loaded = False
             return  # handler for if unabe to load profile
@@ -224,7 +224,7 @@ class ProfileWindow(QWidget):
         for pos, i in enumerate(items):
             self.post_table.setItemWidget(item, pos + 1, i)
 
-    def _login_server(self, pm: ProfileManager) -> Client:
+    def _login_server(self, pm: PostManager) -> Client:
         if not pm.verify_joinable():
             host = pg().get_host_prompt().get_response()
             if not host:
