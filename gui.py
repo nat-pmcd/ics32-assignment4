@@ -12,7 +12,7 @@ from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
-from ds_profile_manager import PostManager, DsuManager
+from ds_profile_manager import DsuManager, PostManager, DmManager
 from ds_messenger import PostPublisher as Client
 from gui_prompts import PromptGenerator as pg
 from gui_prompts import TxtDsu, TxtPrf  # , MsgText
@@ -29,7 +29,8 @@ class ProfileMenu(QWidget):
         super().__init__()
         self.dsu_manager = DsuManager()
         self.profiles = self.dsu_manager.fetch_profiles()
-        self.loaded_windows = {}
+        self.loaded_profiles = {}
+        self.loaded_dms = {}
         self._draw()
 
     def _draw(self) -> None:
@@ -107,11 +108,12 @@ class ProfileMenu(QWidget):
         parent = self.profile_table
         profiles = self.profiles
         pm = self.dsu_manager
-        loaded_windows = self.loaded_windows
+        loaded_profiles = self.loaded_profiles
+        loaded_dms = self.loaded_dms
         match version:
             case 1:
                 def access_profile_handler():
-                    if value in loaded_windows:
+                    if value in loaded_profiles:
                         pm.log(f"Already loaded {value}.",
                                "access profile button handler")
                     profile_viewer = ProfileWindow(value)
@@ -121,7 +123,7 @@ class ProfileMenu(QWidget):
                         profile_viewer.show()
                         pm.log(f"Viewing {value}",
                                "access profile button handler")
-                        loaded_windows[value] = profile_viewer
+                        loaded_profiles[value] = profile_viewer
                     else:
                         pm.log(f"Unable to load {value}.",
                                "access profile button handler")
@@ -134,14 +136,29 @@ class ProfileMenu(QWidget):
                                "delete profile button handler")
                         parent.takeTopLevelItem(index)  # remove at index
                         profiles.remove(value)
-                        if value in loaded_windows:  # close deleted profile
-                            loaded_windows[value].close()
+                        if value in loaded_profiles:  # close deleted profile
+                            loaded_profiles[value].close()
+                        if value in loaded_dms:
+                            loaded_dms[value].close()
                     else:
                         pass  # Should give feedback to the user
                 return delete_profile_handler
             case 3:
                 def access_messenger_handler():
-                    pass
+                    if value in loaded_dms:
+                        pm.log(f"Already loaded {value}.",
+                               "access messenger button handler")
+                    messenger = MessengerWindow(value)
+                    if messenger.loaded:
+                        messenger.resize(600, 500)
+                        messenger.setWindowTitle(TxtPrf.WINDOW_PROFILE)
+                        messenger.show()
+                        pm.log(f"Viewing {value}",
+                               "access messenger button handler")
+                        loaded_dms[value] = messenger
+                    else:
+                        pm.log(f"Unable to load {value}.",
+                               "access messenger button handler")
                 return access_messenger_handler
 
 
@@ -309,6 +326,59 @@ class ProfileWindow(QWidget):
                     if client:
                         client.publish_post(post[0])
                     return publish_handler
+
+
+class MessengerWindow(QWidget):
+    '''
+    temp docstring
+    '''
+    def __init__(self, name: str, admin: bool = False) -> None:
+        super().__init__()
+        self.admin = admin
+
+        self.message_manager = DmManager(name, self.admin)
+        if not self.message_manager.loaded:
+            self.loaded = False
+            return  # handler for if unabe to load profile
+        self.loaded = True
+        self._draw()
+
+    def _draw(self) -> None:
+        self.post_table = QTreeWidget()
+        self.post_table.setColumnCount(5)
+        self.post_table.setHeaderLabels([TxtPrf.HEADER_POST,
+                                         TxtPrf.HEADER_TIME,
+                                         TxtPrf.HEADER_EDIT,
+                                         TxtPrf.HEADER_PUBLISH,
+                                         TxtPrf.HEADER_DELETE])
+
+        usn, pw, bio = self.message_manager.get_profile_info()
+        name_label = QLabel(TxtPrf.LABEL_NAME + usn)
+        pw_label = QLabel(TxtPrf.LABEL_PW + pw)
+        self.bio_label = QLabel(TxtPrf.LABEL_BIO + bio)
+
+        add_row_button = QPushButton(TxtPrf.BUTTON_CREATE_POST)
+        add_row_button.clicked.connect(self._create_post_handler)
+        edit_bio_button = QPushButton(TxtPrf.BUTTON_EDIT_BIO)
+        edit_bio_button.clicked.connect(self._edit_bio_handler)
+        self.pub_bio_button = QPushButton(TxtPrf.BUTTON_PUBLISH_BIO)
+        self.pub_bio_button.clicked.connect(self._publish_bio_handler)
+
+        for i, j in self.message_manager.fetch_posts():
+            self.message_manager.log(f"Added row with content {i}, time {j}",
+                                     "profile viewer init")
+            self._create_row(i, j)  # i is a tuple with content and time
+
+        layout = QGridLayout(self)
+        layout.addWidget(name_label, 0, 0)
+        layout.addWidget(pw_label, 0, 1, Qt.AlignCenter)
+        layout.addWidget(self.bio_label, 0, 2, Qt.AlignRight)
+        layout.addWidget(add_row_button, 1, 0)
+        layout.addWidget(self.pub_bio_button, 1, 1)
+        layout.addWidget(edit_bio_button, 1, 2)
+        layout.addWidget(self.post_table, 2, 0, 1, 4 if self.admin else 3)
+        self.setLayout(layout)
+
 
 def main_gui():
     '''

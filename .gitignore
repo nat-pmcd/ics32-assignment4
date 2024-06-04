@@ -2,3 +2,4 @@ dsu_profiles
 __pycache__
 a4.zip
 .pylintrc
+a4-starter-example-gui.py
