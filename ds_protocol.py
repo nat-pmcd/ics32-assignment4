@@ -82,7 +82,7 @@ def _extract_json(json_msg: str) -> Response:
 
         response = json_obj['response']
         message_type = response['type']
-        message = response['message']
+        message = response['message'] if 'message' in response else response['messages']
         token = response['token'] if 'token' in response else None
 
         return Response(response, message_type, message, token)
@@ -118,7 +118,7 @@ def _read_response(conn: Connection) -> Response:
     """
     try:
         response = conn.recv.readline()[:-1]
-        print("received response", response)
+        # print("received response", response)
 
         return _extract_json(response)
     except Exception as exc:

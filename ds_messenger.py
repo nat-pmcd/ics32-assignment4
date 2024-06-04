@@ -145,7 +145,14 @@ class DirectMessenger(DsuUtils):
         only_new : bool
             If True, returns only new messages.
         """
-        raise NotImplementedError
+        request_command = (r'{"token":"' +
+                           self.token +
+                           r'", "directmessage": "' +
+                           ("new" if only_new else "all") +
+                           r'"}')
+        response = self._send_command(request_command)
+
+        return response.message if response.type != "error" else False
 
     def send(self, message: str, recipient: str) -> bool:
         """
