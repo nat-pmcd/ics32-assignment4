@@ -138,21 +138,21 @@ class ProfileMenu(QWidget, AdminPrinter):
             case 1:
                 def handler():
                     if value in loaded_windows:
-                        self.log(f"Already loaded {value}.", "access profile button handler")
+                        pm.log(f"Already loaded {value}.", "access profile button handler")
                     profile_viewer = ProfileWindow(value, fuck[0])
                     if profile_viewer.loaded:
                         profile_viewer.resize(600, 500)
                         profile_viewer.setWindowTitle(WINDOW_TITLE_PROF)
                         profile_viewer.show()
-                        self.log(f"Viewing {value}", "access profile button handler")
+                        pm.log(f"Viewing {value}", "access profile button handler")
                         loaded_windows[value] = profile_viewer
                     else:
-                        self.log(f"Unable to load {value}.", "access profile button handler")
+                        pm.log(f"Unable to load {value}.", "access profile button handler")
             case 2:
                 def handler():
                     if pm.delete_profile(value, self.admin):
                         index = parent.indexOfTopLevelItem(item)  # get the index of the current item, aka the row
-                        self.log(f"successfully deleted {value} at {index}", "delete profile button handler")
+                        pm.log(f"successfully deleted {value} at {index}", "delete profile button handler")
                         parent.takeTopLevelItem(index)  # via the tree widget parent, remove at that index
                         profiles.remove(value)
                         if value in loaded_windows:
@@ -197,7 +197,7 @@ class ProfileWindow(QWidget, AdminPrinter):
         #  edit_login_button.clicked.connect(self.edit_login_handler)
 
         for i, j in self.profile_manager.fetch_posts():  # for every post in the profile, create a new row in the table
-            self.log(f"Creating row with content {i} and time {j}", "profile viewer init")
+            self.profile_manager.log(f"Creating row with content {i} and time {j}", "profile viewer init")
             self.create_row(i, j, joinable)  # i is a tuple with content and time
 
         layout = QGridLayout(self)
@@ -231,7 +231,7 @@ class ProfileWindow(QWidget, AdminPrinter):
     def create_post_handler(self) -> None:
         content = pg().get_post_prompt().get_response()
         if content:
-            self.log(f"attempting to add {content}", "create post button handler")
+            self.profile_manager.log(f"attempting to add {content}", "create post button handler")
             time = self.profile_manager.create_post(content)
             joinable = self.profile_manager.verify_joinable()
             self.create_row(content, time, joinable)
@@ -251,7 +251,7 @@ class ProfileWindow(QWidget, AdminPrinter):
         if password:
             self.profile_manager.edit_pw(password)
 
-        self.log("successfully made changes, reload whole gui to view", "modify usn/pw button handler")
+        self.profile_manager.log("successfully made changes, reload whole gui to view", "modify usn/pw button handler")
 
     def _generate_button_handler(self, type: int,
                                  item: QTreeWidgetItem = None) -> Callable[..., None]:
@@ -274,7 +274,7 @@ class ProfileWindow(QWidget, AdminPrinter):
                     index = ProfileWindow.get_index(parent, item)
                     parent.takeTopLevelItem(index)  # via the tree widget parent, remove at that index
                     pm.del_post(index)
-                    self.log(f"successfully post at {index}", "delete post button handler")
+                    self.profile_manager.log(f"successfully post at {index}", "delete post button handler")
             case 3:  # publishing a post
                 def handler():  # first fetch mandatory send commands
                     index = ProfileWindow.get_index(parent, item)
@@ -286,21 +286,16 @@ class ProfileWindow(QWidget, AdminPrinter):
             case 4:   # publishing a bio
                 def handler():
                     if not pm.verify_joinable():  # this disgusting code gets a server
-                        host = UserPrompt(TEXT_POPUP_GET_SERVER,
-                                          TEXT_POPUP_PROMPT_IP,
-                                          TEXT_POPUP_PROMPT_IP_BLANK).get_response()
-                        if host:
-                            port = UserPrompt(TEXT_POPUP_GET_SERVER,
-                                              TEXT_POPUP_PROMPT_PORT,
-                                              TEXT_POPUP_PROMPT_PORT_BLANK).get_response()
-                            if port:
-                                self.log(f"got host:port {host}:{port}", "join button handler")
-                                if not pm.update_server_info(host, port):
-                                    return
-                            else:
-                                return
-                        else:
+                        host = pg().get_host_prompt().get_response()
+                        if not host:
                             return
+                        port = pg().get_port_prompt().get_response()
+                        if not port:
+                            return
+                        self.profile_manager.log(f"got host:port {host}:{port}", "join button handler")
+                        if not pm.update_server_info(host, port):
+                            return
+
                     server, port, username, password = pm.get_server_info()
                     bio = pm.get_profile_info()[2]
                     client = Client(server, port)
@@ -308,7 +303,7 @@ class ProfileWindow(QWidget, AdminPrinter):
                         if not client.update_bio(bio):
                             # if we fail to connect, set dsuserver back to nothing
                             pm.update_server_info(reset=True)
-                            self.log(f"failed to join server {server}:{port}",
+                            self.profile_manager.log(f"failed to join server {server}:{port}",
                                      "join button handler", True, username, password)
                     else:
                         items = get_all_items(parent)

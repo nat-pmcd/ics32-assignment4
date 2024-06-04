@@ -40,6 +40,25 @@ class ProfileUtils:
     '''
     Class containing several methods used by multiple 
     '''
+    def __init__(self, admin: bool = False) -> None:
+        self.admin = admin
+
+    def log(self, text: str, source: str, *args, error: bool = False) -> None:
+        '''
+        if currently in admin mode, print. otherwise, do nothing
+        '''
+        if self.admin:
+            if error:
+                header = ("Unexpected error has occured",
+                          f"from <{source}> as follows:\n")
+            else:
+                header = f"Debug log from <{source}> as follows:\n"
+            print(header + text)
+            if len(args) > 0:
+                print("\nAdditional objects are provided:\n")
+                for i in args:
+                    print(str(i) + "\n")
+
     def _get_post_info(self, post: Post) -> tuple:
         """
         temp docstring
@@ -105,13 +124,12 @@ class ProfileUtils:
         return profiles.copy()
 
 
-class DsuManager(AdminPrinter, ProfileUtils):
+class DsuManager(ProfileUtils):
     """
     temp docstring
     """
-    def __init__(self, admin = False) -> None:
-        super().__init__()
-        self.admin = admin
+    def __init__(self, admin: bool = False) -> None:
+        super().__init__(admin)
         self.profile_path = self.create_profile_directory()
 
     def create_profile_directory(self) -> Path:
@@ -144,13 +162,12 @@ class DsuManager(AdminPrinter, ProfileUtils):
         return self._fetch_profiles()
 
 
-class ProfileManager(AdminPrinter, ProfileUtils):
+class ProfileManager(ProfileUtils):
     """
     temp docstring
     """
-    def __init__(self, username: str, admin = False) -> None:
-        super().__init__()
-        self.admin = admin
+    def __init__(self, username: str, admin: bool = False) -> None:
+        super().__init__(admin)
         self.profile_path = Path.cwd() / Path(DIRECTORY_NAME)
         self.loaded = self._init_profile(username)
 

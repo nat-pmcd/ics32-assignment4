@@ -23,7 +23,15 @@ from us_eng import (POPUP_HEADER_CREATE_PROFILE,  # pylint does not like
                     POPUP_PROMPT_GET_BIO_BLANK,
                     POPUP_HEADER_EDIT_POST,
                     POPUP_PROMPT_GET_EDIT,
-                    POPUP_PROMPT_GET_EDIT_BLANK)
+                    POPUP_PROMPT_GET_EDIT_BLANK,
+                    POPUP_HEADER_SERVER,
+                    POPUP_PROMPT_GET_IP,
+                    POPUP_PROMPT_GET_IP_BLANK,
+                    POPUP_PROMPT_GET_PORT,
+                    POPUP_PROMPT_GET_PORT_BLANK)
+
+DEFAULT_IP = "168.235.86.101"
+DEFAULT_PORT = 3021
 
 class UserPrompt(QInputDialog):
     """
@@ -34,6 +42,7 @@ class UserPrompt(QInputDialog):
         super().__init__()
         self.setWindowTitle(window_name)
         self.prompt_text = prompt_text
+        self.default_text = ''
         self.empty_text = empty_text
 
     def get_response(self):
@@ -41,6 +50,7 @@ class UserPrompt(QInputDialog):
         temp docstring
         '''
         self.setLabelText(self.prompt_text)
+        self.setTextValue(self.default_text)
         while True:
             if self.exec():
                 if self._check_valid():
@@ -53,6 +63,12 @@ class UserPrompt(QInputDialog):
         temp docstring
         '''
         self.prompt_text += text
+
+    def set_default_text(self, text: str):
+        '''
+        temp docstring
+        '''
+        self.default_text = text
 
     def _check_valid(self):
         if self._check_blanks():
@@ -168,4 +184,25 @@ class PromptGenerator:
         prompt = UserPrompt(POPUP_HEADER_EDIT_POST,
                             POPUP_PROMPT_GET_EDIT + past_post,
                             POPUP_PROMPT_GET_EDIT_BLANK)
+        prompt.set_default_text(past_post)
+        return prompt
+
+    def get_host_prompt(self):
+        '''
+        temp docstring
+        '''
+        prompt = UserPrompt(POPUP_HEADER_SERVER,
+                            POPUP_PROMPT_GET_IP + DEFAULT_IP,
+                            POPUP_PROMPT_GET_IP_BLANK)
+        prompt.set_default_text(DEFAULT_IP)
+        return prompt
+
+    def get_port_prompt(self):
+        '''
+        temp docstring
+        '''
+        prompt = UserPrompt(POPUP_HEADER_SERVER,
+                            POPUP_PROMPT_GET_PORT + str(DEFAULT_PORT),
+                            POPUP_PROMPT_GET_PORT_BLANK)
+        prompt.set_default_text(DEFAULT_PORT)
         return prompt

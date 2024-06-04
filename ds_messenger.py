@@ -80,7 +80,8 @@ class DirectMessenger:
 
     def _verify_nonblank(self, content: str, target: str = "string") -> bool:
         """
-        Given a string, returns if string is nonblank and not pure whitespace.
+        Given a string, checks if string is nonblank and not pure whitespace.
+        If string is plublishable, returns True.
 
         Parameters
         --------
@@ -91,9 +92,8 @@ class DirectMessenger:
         """
         if isinstance(content, str) and not content.isspace() and content:
             return True
-        else:
-            print(f"No {target} bio to send.")
-            return False
+        print(f"No {target} bio to send.")
+        return False
 
     def login(self, username: str, password: str) -> bool:
         """
@@ -133,6 +133,9 @@ class DirectMessenger:
         bio : str
             The text to update the bio into.
         """
+        if not self._verify_nonblank(bio):
+            return False
+
         bio_command = (r'{"token":"' +
                        self.token +
                        r'", "bio": {"entry": "' +
@@ -152,6 +155,9 @@ class DirectMessenger:
         msg : str
             The text we wish to publish as a post to the server.
         """
+        if not self._verify_nonblank(msg):
+            return False
+
         publish_command = (r'{"token":"' +
                            self.token +
                            r'", "post": {"entry": "' +
@@ -184,8 +190,13 @@ class DirectMessenger:
         message : str
             The `message` we intend on sending to `recipient`.
         recipient : str
-            THe `recipient` who we intend on sending `message` to.
+            The `recipient` who we intend on sending `message` to.
         """
+        if not self._verify_nonblank(message):
+            return False
+        if not self._verify_nonblank(recipient):
+            return False
+
         dm_command = (r'{"token":"' +
                            self.token +
                            r'", "directmessage": {"entry": "' +
@@ -202,13 +213,13 @@ class DirectMessenger:
     def retrieve_new(self) -> list[DirectMessage]:
         """
         Wrapper for _get_dms. Gets all new dms from server and returns
-        in a list of DirectMessages
+        a list of DirectMessages
         """
-        return self._get_dms(True)
+        return self._get_dms(only_new=True)
 
     def retrieve_all(self) -> list[DirectMessage]:
         """
         Wrapper for _get_dms. Gets all new dms from server and returns
-        in a list of DirectMessages
+        a list of DirectMessages
         """
         return self._get_dms()

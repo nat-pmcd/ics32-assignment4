@@ -41,9 +41,9 @@ POPUP_PROMPT_GET_BIO_BLANK = 'Bio cannot be empty!'
 
 # GET SERVER
 POPUP_HEADER_SERVER = 'Select server'
-POPUP_PROMPT_GET_IP = 'Enter the server IP address. Default 168.235.86.101'
+POPUP_PROMPT_GET_IP = 'Enter the server IP address. Default '
 POPUP_PROMPT_GET_IP_BLANK = 'IP address cannot be blank!'
-POPUP_PROMPT_GET_PORT = 'Enter the server port. Default 3021'
+POPUP_PROMPT_GET_PORT = 'Enter the server port. Default '
 POPUP_PROMPT_GET_PORT_BLANK = 'Port cannot be blank!'
 
 # USER POST
@@ -62,6 +62,6 @@ POPUP_PROMPT_GET_EDIT = 'Previous post:\n'
 POPUP_PROMPT_GET_EDIT_BLANK = POPUP_PROMPT_GET_CONTENT_BLANK
 
 # ADD FRIEND
-POPUP_HEADER_EDIT_POST = 'Edit this post'
-POPUP_PROMPT_GET_EDIT = 'Previous post:\n'
-POPUP_PROMPT_GET_EDIT_BLANK = POPUP_PROMPT_GET_CONTENT_BLANK
+POPUP_ADD_FRIEND = 'Add a friend!'
+POPUP_PROMPT_GET_FRIEND = 'Enter friend name.'
+POPUP_PROMPT_GET_FRIEND_BLANK = "You can't be friends with nobody!"
