@@ -99,7 +99,7 @@ class Friend(dict):
 
         # Wondering how the hell this black magic works now...
         dict.__init__(self, name=self._name,
-                      in_posts=self._in_msgs, out_posts=self._out_msgs)
+                      in_msgs=self._in_msgs, out_msgs=self._out_msgs)
 
     def get_name(self) -> str:
         """
@@ -129,16 +129,16 @@ class Friend(dict):
     def set_out_msgs(self, out_msgs: list[Post]):
         """
         Returns the list of your messages
-        """
-        self._out_msgs = out_msgs.copy()
-        dict.__setitem__(self, 'timestamp', out_msgs.copy())
+        """        
+        self._out_msgs = out_msgs.copy() if out_msgs else None
+        dict.__setitem__(self, 'out_msgs', self._out_msgs)
 
     def set_in_msgs(self, in_msgs: list[Post]):
         """
         Returns the list of their messages
         """
-        self._in_msgs = in_msgs.copy()
-        dict.__setitem__(self, 'timestamp', in_msgs.copy())
+        self._in_msgs = in_msgs.copy() if in_msgs else None
+        dict.__setitem__(self, 'in_msgs', self._in_msgs)
 
     name = property(get_name, set_name)
     out_msgs = property(get_out_msgs, set_out_msgs)
@@ -284,14 +284,15 @@ class Profile(dict):
                 if '_friends' in obj:  # testing if we have any friends :(
                     for friend_obj in obj['_friends']:
                         name = friend_obj['name']
-                        out_obj = friend_obj['_out_msgs']
-                        in_obj = friend_obj['_in_msgs']
+                        out_obj = friend_obj['out_msgs']
+                        in_obj = friend_obj['in_msgs']
                         out_messsages = self._get_json_posts(out_obj)
                         in_messages = self._get_json_posts(in_obj)
                         friend = Friend(name, out_messsages, in_messages)
                         self._friends.append(friend)
                 f.close()
             except Exception as ex:
+                print(f"{type(ex)} {ex}")
                 raise DsuProfileError(ex) from ex
         else:
             raise DsuFileError()
@@ -301,6 +302,9 @@ class Profile(dict):
         Given a readable like object from json, return all posts from it.
         """
         posts = []
+        if not obj:
+            return list().copy()
+
         for post_obj in obj:
             post = Post(post_obj['entry'], post_obj['timestamp'])
             posts.append(post)

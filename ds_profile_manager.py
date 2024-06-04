@@ -336,8 +336,17 @@ class DmManager(ProfileManager):
     def fetch_friends(self) -> list[Friend]:
         return self.friends
 
-    def add_friend(self, friend: Friend) -> bool:
-        raise NotImplementedError
+    def add_friend(self, friend: str,
+                   in_msg: list = None,
+                   out_msg: list = None) -> str:
+        """
+        Given a string, we create a friend and save it to the profile.
+        Then we return if successful.
+        """
+        new_friend = Friend(friend, out_msg, in_msg)
+        self.profile.add_friend(new_friend)
+        self.save_profile()
+        return friend
 
     def load_texts(self, friend: Friend) -> list[Post]:
         raise NotImplementedError

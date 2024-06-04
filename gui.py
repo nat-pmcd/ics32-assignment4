@@ -10,7 +10,7 @@ Docstring
 
 from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
-    QPushButton, QWidget, QLabel, QGridLayout)
+    QPushButton, QWidget, QLabel, QGridLayout, QPlainTextEdit)
 from PySide6.QtCore import Qt
 from ds_profile_manager import DsuManager, PostManager, DmManager
 from ds_messenger import PostPublisher as Client
@@ -344,33 +344,49 @@ class MessengerWindow(QWidget):
         self.friend_table = QTreeWidget()
         self.friend_table.setHeaderHidden(True)
 
+        self.text_editor = QPlainTextEdit()
+
         send_button = QPushButton(TxtMsg.BUTTON_SEND_MSG)
         send_button.clicked.connect(self._send_handler)
 
         add_friend_button = QPushButton(TxtMsg.BUTTON_ADD_FRIEND)
-        add_friend_button.clicked.connect(self._send_handler)
+        add_friend_button.clicked.connect(self._add_friend_button_handler)
 
         for i in self.message_manager.fetch_friends():
             self.message_manager.log(f"Added row with content {i.get_name()}",
                                      "messenger init")
-            item = QTreeWidgetItem(self.friend_table, [i.get_name()])
-            self.friend_table.setItemWidget(item, 0, QLabel(i.get_name()))
+            self._add_friend_row(i.get_name())
 
         self.message_table =QTreeWidget()
         self.message_table.setHeaderHidden(True)
 
         layout = QGridLayout(self)
-        layout.addWidget(self.friend_table, 0, 0)
-        layout.addWidget(send_button, 1, 2)
-        layout.addWidget(add_friend_button, 1, 0)
-        layout.addWidget(self.message_table, 0, 1, 1, 2)
+        layout.addWidget(self.friend_table, 0, 0, 2, 1)
+        layout.addWidget(self.message_table, 0, 1)
+        layout.addWidget(self.text_editor, 1, 1)
+        layout.addWidget(send_button, 2, 1)
+        layout.addWidget(add_friend_button, 2, 0)
+        
         self.setLayout(layout)
+
+    def _add_friend_row(self, friend):
+        item = QTreeWidgetItem(self.friend_table, [friend])
+        self.friend_table.setItemWidget(item, 0, QLabel(friend))
 
     def _send_handler(self):
         pass
 
-    def _add_friend_handler(self):
-        pass
+    def _add_friend_button_handler(self):
+        '''
+        Prompt the user via dialog boxes for a username of a friend.
+        '''
+        friend = pg().get_friend_prompt().get_response()
+
+        if not friend:
+            return
+        self._add_friend_row(friend)
+        self.message_manager.add_friend(friend)
+        return  # Should give feedback to the user if successful or not
 
 
 def main_gui():

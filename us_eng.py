@@ -10,7 +10,7 @@ class DsuEnglish:
     '''
     Contains all English text inside the DSU Manager window.
     '''
-    WINDOW_MAIN = 'DSU Client'
+    WINDOW_MAIN = 'ICS 32 DS Client'
 
     TITLE_PROFILE = 'Username'
     HEADER_ACCESS_PROFILE = 'Profile'
@@ -28,6 +28,8 @@ class ProfileEnglish:
     '''
     Contains all English text inside the DSU Profile window.
     '''
+    WINDOW_PROFILE = 'ICS 32 DS Client Profile Manager'
+
     LABEL_NAME = 'Username: '
     LABEL_PW = 'Password: '
     LABEL_BIO = 'Bio: '
@@ -38,7 +40,6 @@ class ProfileEnglish:
     HEADER_PUBLISH = 'Publish'
     HEADER_DELETE = 'Delete'
 
-    WINDOW_PROFILE = 'DSU Profile'
     BUTTON_EDIT_LOGIN = 'Modify Login'
 
     BUTTON_EDIT_BIO = 'Edit bio'
@@ -55,7 +56,7 @@ class MsgEnglish:
     '''
     Contains all English text inside the DSU Messenger window.
     '''
-    WINDOW_MSG = 'DSU Messenger'
+    WINDOW_MSG = 'ICS 32 DS Messenger'
 
     BUTTON_ADD_FRIEND = 'Add Friend'
     BUTTON_SEND_MSG = 'Send'
