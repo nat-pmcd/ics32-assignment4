@@ -5,10 +5,11 @@
 # pylint: disable = no-name-in-module
 from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
-    QPushButton, QWidget, QInputDialog, QLabel, QGridLayout)
+    QPushButton, QWidget, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
 from ds_profile_manager import ProfileManager, AdminPrinter, DsuManager
 from ds_messenger import DirectMessenger as Client
+from gui_prompts import PromptGenerator as pg
 
 # HEADER LOCALIZATION
 TEXT_HEADER_PROFILE = 'Profiles'
@@ -65,53 +66,6 @@ TEXT_POPUP_PROMPT_EDIT = 'Previous post:\n'
 TEXT_POPUP_PROMPT_EDIT_BLANK = TEXT_POPUP_PROMPT_CONTENT_BLANK
 
 
-# USER PROMPTS
-class UserPrompt(QInputDialog):
-    """
-    """
-    def __init__(self, window_name: str, prompt_text: str, empty_text: str) -> None:
-        super().__init__()
-        self.setWindowTitle(window_name)
-        self.setLabelText(prompt_text)
-        self.empty_text = empty_text
-
-    def get_response(self):
-        while True:
-            if self.exec():
-                if self.check_blanks():
-                    self.setLabelText(self.empty_text)
-                else:
-                    return self.textValue()
-            else:
-                return None
-
-    def check_blanks(self) -> bool:
-        return not self.textValue() or self.textValue().isspace()
-
-
-class UniquePrompt(UserPrompt):
-    def __init__(self, window_name: str, prompt_text: str, empty_text: str, dupe_text: str, lst: tuple) -> None:
-        super().__init__(window_name, prompt_text, empty_text)
-        self.dupe_text = dupe_text
-        self.dupe_list = lst
-
-    def get_response(self):
-        while True:
-            temp = self.exec()
-            if temp:
-                if self.check_blanks():
-                    self.setLabelText(self.empty_text)
-                elif self.check_duplicate(self.dupe_list):
-                    self.setLabelText(self.dupe_text)
-                else:
-                    return self.textValue()
-            else:
-                return None
-
-    def check_duplicate(self, lst) -> bool:
-        return self.textValue() in lst
-
-
 # MAIN PROFILE MENU
 class ProfileMenu(QWidget, AdminPrinter):
     def __init__(self):
@@ -143,11 +97,11 @@ class ProfileMenu(QWidget, AdminPrinter):
     def create_row(self, name: str) -> None:  # given a name, create an additional row in the list of profiles
         item = QTreeWidgetItem(self.treeWidget, [name])
         access_button = QPushButton(TEXT_BUTTON_ACCESS_PROFILE, self)
-        access_button.clicked.connect(self.generate_button_handler(1, name))
+        access_button.clicked.connect(self._generate_button_handler(1, name))
         self.treeWidget.setItemWidget(item, 1, access_button)
 
         delete_button = QPushButton(TEXT_BUTTON_DELETE_PROFILE, self)
-        delete_button.clicked.connect(self.generate_button_handler(2, name, item))
+        delete_button.clicked.connect(self._generate_button_handler(2, name, item))
         self.treeWidget.setItemWidget(item, 2, delete_button)
 
     def admin_toggle_handler(self) -> None:  # DEPRECATED, admin button has been disabled
@@ -161,22 +115,20 @@ class ProfileMenu(QWidget, AdminPrinter):
         Prompt the user via dialog boxes for a username and password.
         Once both are received, create a new profile, and add it to the list.
         '''
-        username = UniquePrompt(TEXT_POPUP_CREATE_PROFILE,
-                                TEXT_POPUP_PROMPT_NAME,
-                                TEXT_POPUP_PROMPT_NAME_BLANK,
-                                TEXT_POPUP_PROMPT_NAME_DUPLICATE,
-                                tuple(self.profiles)).get_response()
+        username = pg().get_username_prompt(tuple(self.profiles)).get_response()
 
-        if username:
-            password = UserPrompt(TEXT_POPUP_CREATE_PROFILE,
-                                  TEXT_POPUP_PROMPT_PW,
-                                  TEXT_POPUP_PROMPT_NAME_BLANK).get_response()
-            if password:
-                self.create_row(username)
-                self.profiles.append(username)
-                self.dsu_manager.create_profile(username, password)  # FIXME: We should give feedback to the user if successful or not
+        if not username:
+            return
+        password = pg().get_password_prompt().get_response()
+        if not password:
+            return
+        self.create_row(username)
+        self.profiles.append(username)
+        self.dsu_manager.create_profile(username, password)  # FIXME: We should give feedback to the user if successful or not
+        return
 
-    def generate_button_handler(self, type: int, value: str, item: QTreeWidgetItem = None) -> Callable[..., None]:  # generate functions to load and delete profiles
+    def _generate_button_handler(self, type: int, value: str,
+                                item: QTreeWidgetItem = None) -> Callable[..., None]:
         parent = self.treeWidget
         profiles = self.profiles
         pm = self.dsu_manager
@@ -239,7 +191,7 @@ class ProfileWindow(QWidget, AdminPrinter):
         joinable = self.profile_manager.verify_joinable()
         text = TEXT_BUTTON_PUBLISH_BIO if joinable else TEXT_BUTTON_PUBLISH_BIO_UNJOINED
         self.join_button = QPushButton(text)
-        self.join_button.clicked.connect(self.generate_button_handler(4))
+        self.join_button.clicked.connect(self._generate_button_handler(4))
 
         #  edit_login_button = QPushButton(TEXT_BUTTON_MODIFY_LOGIN) DEPRECATED
         #  edit_login_button.clicked.connect(self.edit_login_handler)
@@ -264,22 +216,20 @@ class ProfileWindow(QWidget, AdminPrinter):
         self.treeWidget.setItemWidget(item, 1, QLabel(time))
 
         edit_button = QPushButton(TEXT_BUTTON_EDIT_POST, self)
-        edit_button.clicked.connect(self.generate_button_handler(1, item=item))
+        edit_button.clicked.connect(self._generate_button_handler(1, item=item))
         self.treeWidget.setItemWidget(item, 2, edit_button)
 
         publish_button = QPushButton(TEXT_BUTTON_PUBLISH_POST, self)
-        publish_button.clicked.connect(self.generate_button_handler(3, item=item))
+        publish_button.clicked.connect(self._generate_button_handler(3, item=item))
         publish_button.setEnabled(joinable)
         self.treeWidget.setItemWidget(item, 3, publish_button)
 
         delete_button = QPushButton(TEXT_BUTTON_DELETE_POST, self)
-        delete_button.clicked.connect(self.generate_button_handler(2, item=item))
+        delete_button.clicked.connect(self._generate_button_handler(2, item=item))
         self.treeWidget.setItemWidget(item, 4, delete_button)
 
     def create_post_handler(self) -> None:
-        content = UserPrompt(TEXT_POPUP_CREATE_POST,
-                             TEXT_POPUP_PROMPT_CONTENT,
-                             TEXT_POPUP_PROMPT_CONTENT_BLANK).get_response()
+        content = pg().get_post_prompt().get_response()
         if content:
             self.log(f"attempting to add {content}", "create post button handler")
             time = self.profile_manager.create_post(content)
@@ -287,29 +237,24 @@ class ProfileWindow(QWidget, AdminPrinter):
             self.create_row(content, time, joinable)
 
     def edit_bio_handler(self) -> None:
-        bio = UserPrompt(TEXT_POPUP_EDIT_BIO,
-                         TEXT_POPUP_PROMPT_BIO,
-                         TEXT_POPUP_PROMPT_BIO_BLANK).get_response()
+        bio = pg().get_bio_prompt().get_response()
         if bio:
             self.profile_manager.edit_bio(bio)
             self.bio_label.setText("Bio: " + bio)
 
     def edit_login_handler(self) -> None:
-        username = UserPrompt(TEXT_POPUP_CREATE_PROFILE,
-                                TEXT_POPUP_PROMPT_NAME,
-                                TEXT_POPUP_PROMPT_NAME_BLANK).get_response()
+        username = pg().get_edit_username_prompt().get_response()
         if username:
             self.profile_manager.edit_usn(username)
 
-        password = UserPrompt(TEXT_POPUP_CREATE_PROFILE,
-                              TEXT_POPUP_PROMPT_PW,
-                              TEXT_POPUP_PROMPT_NAME_BLANK).get_response()
+        password = pg().get_edit_password_prompt().get_response()
         if password:
             self.profile_manager.edit_pw(password)
 
         self.log("successfully made changes, reload whole gui to view", "modify usn/pw button handler")
 
-    def generate_button_handler(self, type: int, item: QTreeWidgetItem = None) -> Callable[..., None]:  # generate functions to load, delete, and publish posts
+    def _generate_button_handler(self, type: int,
+                                 item: QTreeWidgetItem = None) -> Callable[..., None]:
         parent = self.treeWidget  # FIXME: EVERYTHING HERE
         pm = self.profile_manager
         get_all_items = ProfileWindow.get_all_items
@@ -319,9 +264,7 @@ class ProfileWindow(QWidget, AdminPrinter):
                 def handler():
                     index = ProfileWindow.get_index(parent, item)
                     post = pm.index_post(index)
-                    content = UserPrompt(TEXT_POPUP_EDIT_POST,
-                                         TEXT_POPUP_PROMPT_EDIT + post[0],
-                                         TEXT_POPUP_PROMPT_EDIT_BLANK).get_response()
+                    content = pg().get_edit_post_prompt(post[0]).get_response()
                     if content:
                         pm.edit_post(index, content)
                         parent.setItemWidget(item, 0, QLabel(content))

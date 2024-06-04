@@ -25,7 +25,8 @@ class AdminPrinter:
         '''
         if self.admin:
             if error:
-                header = f"Unexpected error has occured from <{source}> as follows:\n"
+                header = ("Unexpected error has occured",
+                          f"from <{source}> as follows:\n")
             else:
                 header = f"Debug log from <{source}> as follows:\n"
             print(header + text)
@@ -35,45 +36,115 @@ class AdminPrinter:
                     print(str(i) + "\n")
 
 
-class DsuManager(AdminPrinter):
+class ProfileUtils:
+    '''
+    Class containing several methods used by multiple 
+    '''
+    def _get_post_info(self, post: Post) -> tuple:
+        """
+        temp docstring
+        """
+        content = post.get_entry()
+        time = datetime.fromtimestamp(post.get_time())
+        strtime = time.strftime('%Y-%m-%d %H:%M:%S')
+        return content, strtime
+
+
+    def _get_path(self, usn: str = None) -> Path:
+        """
+        temp docstring
+        """
+        direc_path = Path.cwd() / Path(DIRECTORY_NAME)
+        return direc_path / Path(usn + ".dsu") if usn else direc_path
+
+
+    def _create_profile(self, usn: str = None, pw: str = None,
+                       profile: Profile = None, admin: bool = False) -> bool:
+        """
+        temp docstring
+        """
+        logger = AdminPrinter(admin)
+        try:
+            if profile is None:
+                profile = Profile(None, usn, pw)
+            path = self._get_path(profile.username)
+            logger.log(f"attempting to save at {path}", "create profile")
+            path.touch()
+            profile.save_profile(path)
+            return True
+        except Exception as exc:
+            logger.log("failure when creating profile",
+                       "create profile", type(exc), exc, error=True)
+            return False
+
+
+    def _delete_profile(self, usn: str, admin: bool = False) -> bool:
+        """
+        temp docstring
+        """
+        logger = AdminPrinter(admin)
+        try:
+            path = self._get_path(usn)
+            path.unlink()
+            return True
+        except Exception as exc:
+            logger.log("failure when deleting profile",
+                       "delete profile", type(exc), exc, error=True)
+            return False
+
+
+    def _fetch_profiles(self) -> list[str]:
+        """
+        temp docstring
+        """
+        profiles = []
+
+        for i in self._get_path().iterdir():
+            if i.is_file() and i.suffix == ".dsu":
+                profiles.append(str(i.name[:-4]))
+        return profiles.copy()
+
+
+class DsuManager(AdminPrinter, ProfileUtils):
     """
     temp docstring
     """
     def __init__(self, admin = False) -> None:
         super().__init__()
         self.admin = admin
-        self.profile_path = self.create_profile_directory()  # first create dsu folder
+        self.profile_path = self.create_profile_directory()
 
     def create_profile_directory(self) -> Path:
         """
         temp docstring
         """
-        profile_path = get_path()
-        if not profile_path.exists():  # if the path doesn't exist, create it. otherwise do nothing
+        profile_path = self._get_path()
+        if not profile_path.exists():
             profile_path.mkdir(parents=True)
 
         return profile_path
 
-    def create_profile(self, usn: str = None, pw: str = None, profile: Profile = None) -> bool:
+    def create_profile(self, usn: str = None, pw: str = None,
+                       profile: Profile = None) -> bool:
         """
         temp docstring
         """
-        return create_profile(usn, pw, profile, self.admin)
+        return self._create_profile(usn, pw, profile, self.admin)
 
     def delete_profile(self, usn: str, admin: bool = False):
         """
         if currently in admin mode, print. otherwise, do nothing
         """
-        return delete_profile(usn, admin)
+        return self._delete_profile(usn, admin)
 
     def fetch_profiles(self) -> list[str]:
         """
         temp docstring
         """
-        return fetch_profiles()
+        return self._fetch_profiles()
 
 
-class ProfileManager(AdminPrinter):
+class ProfileManager(AdminPrinter, ProfileUtils):
     """
     temp docstring
     """
@@ -93,7 +164,8 @@ class ProfileManager(AdminPrinter):
             self.posts = self.profile.get_posts()
             return True
         except Exception as exc:
-            self.log("failure when opening profile", "pm init profile", type(exc), exc, error=True)
+            self.log("failure when opening profile",
+                     "pm init profile", type(exc), exc, error=True)
             return False
 
     def get_profile_info(self) -> tuple:
@@ -108,11 +180,12 @@ class ProfileManager(AdminPrinter):
         temp docstring
         """
         try:
-            path = get_path(self.profile.username)
+            path = self._get_path(self.profile.username)
             self.profile.save_profile(path)
             return True
         except Exception as exc:
-            self.log("failure when saving profile", "pm save profile", type(exc), exc, error=True)
+            self.log("failure when saving profile",
+                     "pm save profile", type(exc), exc, error=True)
             return False
 
     def edit_bio(self, content: str) -> bool:
@@ -124,17 +197,18 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing bio", "pm edit bio", type(exc), exc, error=True)
+            self.log("failure when editing bio",
+                     "pm edit bio", type(exc), exc, error=True)
             return False
 
     def edit_usn(self, content: str) -> bool:
         """
         temp docstring
         """
-        if content not in fetch_profiles():
-            delete_profile(self.profile.username)
+        if content not in self._fetch_profiles():
+            self._delete_profile(self.profile.username)
             self.profile.username = content
-            create_profile(profile=self.profile, admin=self.admin)
+            self._create_profile(profile=self.profile, admin=self.admin)
             return True
         self.log("Did not change usn, would override file", "pm edit usn func")
         return False
@@ -148,20 +222,22 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing pw", "pm edit pw", type(exc), exc, error=True)
+            self.log("failure when editing pw",
+                     "pm edit pw", type(exc), exc, error=True)
             return False
 
     def access_profile(self, usn: str) -> Profile:
         """
         temp docstring
         """
-        path = get_path(usn)
+        path = self._get_path(usn)
         try:
             profile = Profile()
             profile.load_profile(path)
             return profile
         except Exception as exc:
-            self.log("failure accessing profile", "pm access profile", type(exc), exc, error=True)
+            self.log("failure accessing profile",
+                     "pm access profile", type(exc), exc, error=True)
             return None
 
     def get_server_info(self) -> tuple:
@@ -171,7 +247,8 @@ class ProfileManager(AdminPrinter):
         pf = self.profile
         return pf.dsuserver[0], pf.dsuserver[1], pf.username, pf.password
 
-    def update_server_info(self, host: str = None, port: int = None, reset: bool = False):
+    def update_server_info(self, host: str = None,
+                           port: int = None, reset: bool = False):
         """
         temp docstring
         """
@@ -180,17 +257,19 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure updating server", "pm update serv info", type(exc), exc, error=True)
+            self.log("failure updating server", "pm update serv info",
+                     type(exc), exc, error=True)
             return False
 
-    def create_post(self, content: str) -> str:  # we return the timestamp of post
+    def create_post(self, content: str) -> str:
         """
-        temp docstring
+        Given a string, we create a post and save it to the profile.
+        Then we return the timestamp of the post as a string.
         """
         post = Post(content)
         self.profile.add_post(post)
         self.save_profile()
-        return get_post_info(post)[1]
+        return self._get_post_info(post)[1]
 
     def edit_post(self, index: int, content: str) -> bool:
         """
@@ -202,7 +281,8 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing post", "pm edit post", type(exc), exc, error=True)
+            self.log("failure when editing post", "pm edit post",
+                     type(exc), exc, error=True)
             return False
 
     def del_post(self, index: int) -> bool:
@@ -214,7 +294,8 @@ class ProfileManager(AdminPrinter):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when deleting post", "pm del post", type(exc), exc, error=True)
+            self.log("failure when deleting post", "pm del post",
+                     type(exc), exc, error=True)
             return False
 
     def index_post(self, index: int) -> tuple:
@@ -222,7 +303,7 @@ class ProfileManager(AdminPrinter):
         temp docstring
         """
         post = self.posts[index]
-        content, time = get_post_info(post)
+        content, time = self._get_post_info(post)
         return content, time
 
     def fetch_posts(self):
@@ -230,74 +311,13 @@ class ProfileManager(AdminPrinter):
         temp docstring
         """
         for i in self.posts:
-            content, time = get_post_info(i)
+            content, time = self._get_post_info(i)
             yield content, time
 
     def verify_joinable(self) -> bool:
         """
         temp docstring
         """
-        self.log(f"accessing dsuserver and got {self.profile.dsuserver}", "pm verify joinable")
+        self.log(f"accessing dsuserver and got {self.profile.dsuserver}",
+                 "pm verify joinable")
         return self.profile.dsuserver is not None
-
-
-def get_post_info(post: Post) -> tuple:
-    """
-    temp docstring
-    """
-    content = post.get_entry()
-    time = datetime.fromtimestamp(post.get_time()).strftime('%Y-%m-%d %H:%M:%S')
-    return content, time
-
-
-def get_path(usn: str = None) -> Path:
-    """
-    temp docstring
-    """
-    direc_path = Path.cwd() / Path(DIRECTORY_NAME)
-    return direc_path / Path(usn + ".dsu") if usn else direc_path
-
-
-def create_profile(usn: str = None, pw: str = None,
-                   profile: Profile = None, admin: bool = False) -> bool:
-    """
-    temp docstring
-    """
-    logger = AdminPrinter(admin)
-    try:
-        if profile is None:
-            profile = Profile(None, usn, pw)
-        path = get_path(profile.username)
-        logger.log(f"attempting to save at {path}", "create profile")
-        path.touch()
-        profile.save_profile(path)
-        return True
-    except Exception as exc:
-        logger.log("failure when creating profile", "create profile", type(exc), exc, error=True)
-        return False
-
-
-def delete_profile(usn: str, admin: bool = False) -> bool:
-    """
-    temp docstring
-    """
-    logger = AdminPrinter(admin)
-    try:
-        path = get_path(usn)
-        path.unlink()
-        return True
-    except Exception as exc:
-        logger.log("failure when deleting profile", "delete profile", type(exc), exc, error=True)
-        return False
-
-
-def fetch_profiles() -> list[str]:
-    """
-    temp docstring
-    """
-    profiles = []
-
-    for i in get_path().iterdir():
-        if i.is_file() and i.suffix == ".dsu":
-            profiles.append(str(i.name[:-4]))
-    return profiles.copy()
