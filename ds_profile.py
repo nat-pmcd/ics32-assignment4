@@ -232,7 +232,7 @@ class Profile(dict):
         get_friends returns the list object containing all friends that have
         been added to the Profile object
         """
-        return self._posts
+        return self._friends
 
     def save_profile(self, path: str) -> None:
         """

@@ -15,7 +15,7 @@ from PySide6.QtCore import Qt
 from ds_profile_manager import DsuManager, PostManager, DmManager
 from ds_messenger import PostPublisher as Client
 from gui_prompts import PromptGenerator as pg
-from gui_prompts import TxtDsu, TxtPrf  # , MsgText
+from gui_prompts import TxtDsu, TxtPrf, TxtMsg
 
 MAIN_WIDTH = 450
 MAIN_HEIGHT = 400
@@ -35,11 +35,8 @@ class ProfileMenu(QWidget):
 
     def _draw(self) -> None:
         self.profile_table = QTreeWidget()  # create a table w 3 cols
-        self.profile_table.setColumnCount(3)
-        self.profile_table.setHeaderLabels([TxtDsu.TITLE_PROFILE,
-                                         TxtDsu.HEADER_ACCESS_PROFILE,
-                                         TxtDsu.HEADER_MESSAGES_PROFILE,
-                                         TxtDsu.HEADER_DELETE_PROFILE])
+        self.profile_table.setColumnCount(4)
+        self.profile_table.setHeaderHidden(True)
 
         for i in self.profiles:  # for every profile, create a row
             self._create_row(i)
@@ -344,40 +341,36 @@ class MessengerWindow(QWidget):
         self._draw()
 
     def _draw(self) -> None:
-        self.post_table = QTreeWidget()
-        self.post_table.setColumnCount(5)
-        self.post_table.setHeaderLabels([TxtPrf.HEADER_POST,
-                                         TxtPrf.HEADER_TIME,
-                                         TxtPrf.HEADER_EDIT,
-                                         TxtPrf.HEADER_PUBLISH,
-                                         TxtPrf.HEADER_DELETE])
+        self.friend_table = QTreeWidget()
+        self.friend_table.setHeaderHidden(True)
 
-        usn, pw, bio = self.message_manager.get_profile_info()
-        name_label = QLabel(TxtPrf.LABEL_NAME + usn)
-        pw_label = QLabel(TxtPrf.LABEL_PW + pw)
-        self.bio_label = QLabel(TxtPrf.LABEL_BIO + bio)
+        send_button = QPushButton(TxtMsg.BUTTON_SEND_MSG)
+        send_button.clicked.connect(self._send_handler)
 
-        add_row_button = QPushButton(TxtPrf.BUTTON_CREATE_POST)
-        add_row_button.clicked.connect(self._create_post_handler)
-        edit_bio_button = QPushButton(TxtPrf.BUTTON_EDIT_BIO)
-        edit_bio_button.clicked.connect(self._edit_bio_handler)
-        self.pub_bio_button = QPushButton(TxtPrf.BUTTON_PUBLISH_BIO)
-        self.pub_bio_button.clicked.connect(self._publish_bio_handler)
+        add_friend_button = QPushButton(TxtMsg.BUTTON_ADD_FRIEND)
+        add_friend_button.clicked.connect(self._send_handler)
 
-        for i, j in self.message_manager.fetch_posts():
-            self.message_manager.log(f"Added row with content {i}, time {j}",
-                                     "profile viewer init")
-            self._create_row(i, j)  # i is a tuple with content and time
+        for i in self.message_manager.fetch_friends():
+            self.message_manager.log(f"Added row with content {i.get_name()}",
+                                     "messenger init")
+            item = QTreeWidgetItem(self.friend_table, [i.get_name()])
+            self.friend_table.setItemWidget(item, 0, QLabel(i.get_name()))
+
+        self.message_table =QTreeWidget()
+        self.message_table.setHeaderHidden(True)
 
         layout = QGridLayout(self)
-        layout.addWidget(name_label, 0, 0)
-        layout.addWidget(pw_label, 0, 1, Qt.AlignCenter)
-        layout.addWidget(self.bio_label, 0, 2, Qt.AlignRight)
-        layout.addWidget(add_row_button, 1, 0)
-        layout.addWidget(self.pub_bio_button, 1, 1)
-        layout.addWidget(edit_bio_button, 1, 2)
-        layout.addWidget(self.post_table, 2, 0, 1, 4 if self.admin else 3)
+        layout.addWidget(self.friend_table, 0, 0)
+        layout.addWidget(send_button, 1, 2)
+        layout.addWidget(add_friend_button, 1, 0)
+        layout.addWidget(self.message_table, 0, 1, 1, 2)
         self.setLayout(layout)
+
+    def _send_handler(self):
+        pass
+
+    def _add_friend_handler(self):
+        pass
 
 
 def main_gui():

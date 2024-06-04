@@ -319,8 +319,22 @@ class DmManager(ProfileManager):
     def __init__(self, username: str, admin: bool = False) -> None:
         super().__init__(username, admin)
 
-    def get_friends(self) -> list[Friend]:
-        raise NotImplementedError
+    def _init_profile(self, username: str) -> bool:
+        """
+        temp docstring
+        """
+        try:
+            self.log(f"Attempting to access {username}", "pm init_profile")
+            self.profile = self.access_profile(username)
+            self.friends = self.profile.get_friends()
+            return True
+        except Exception as exc:
+            self.log("failure when opening profile",
+                     "pm init messenger", type(exc), exc, error=True)
+            return False
+
+    def fetch_friends(self) -> list[Friend]:
+        return self.friends
 
     def add_friend(self, friend: Friend) -> bool:
         raise NotImplementedError

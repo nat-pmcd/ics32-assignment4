@@ -57,6 +57,9 @@ class MsgEnglish:
     '''
     WINDOW_MSG = 'DSU Messenger'
 
+    BUTTON_ADD_FRIEND = 'Add Contact'
+    BUTTON_SEND_MSG = 'Send'
+
 
 class PromptsEnglish:
     '''
