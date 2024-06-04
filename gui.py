@@ -3,31 +3,39 @@
 # 80752008
 
 # pylint: disable = no-name-in-module
+
+'''
+Docstring
+'''
+
 from typing import Callable
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QLabel, QGridLayout)
 from PySide6.QtCore import Qt
 from ds_profile_manager import ProfileManager, DsuManager
-from ds_messenger import DirectMessenger as Client
+from ds_messenger import PostPublisher as Client
 from gui_prompts import PromptGenerator as pg
 from gui_prompts import TxtDsu, TxtPrf  # , MsgText
 
 
 # MAIN PROFILE MENU
 class ProfileMenu(QWidget):
+    '''
+    Ttemp docstring
+    '''
     def __init__(self):
         super().__init__()
         self.dsu_manager = DsuManager()
         self.profiles = self.dsu_manager.fetch_profiles()
         self.loaded_windows = {}
 
-        self.profile_table = QTreeWidget()  # create table with 3 columns, blank label
+        self.profile_table = QTreeWidget()  # create a table w 3 cols
         self.profile_table.setColumnCount(3)
         self.profile_table.setHeaderLabels([TxtDsu.TITLE_PROFILE,
                                          TxtDsu.HEADER_ACCESS_PROFILE,
                                          TxtDsu.HEADER_DELETE_PROFILE])
 
-        for i in self.profiles:  # for every name in profile, create a new row in the table
+        for i in self.profiles:  # for every profile, create a row
             self._create_row(i)
 
         add_row_button = QPushButton(TxtDsu.BUTTON_CREATE_PROFILE)
@@ -42,14 +50,26 @@ class ProfileMenu(QWidget):
         layout.addWidget(self.profile_table, 1, 0, 1, 2)
         self.setLayout(layout)
 
-    def _create_row(self, name: str) -> None:  # given a name, create an additional row in the list of profiles
+    def _create_row(self, name: str) -> None:
+        '''
+        Create an additional row containing the name of the profile.
+        Adds functional buttons to the rows to access or delete
+
+        Parameters
+        --------
+        content : str
+            The contents of the post.
+        time : str
+            The timestamp of the post, as already formatted text.
+        '''
         item = QTreeWidgetItem(self.profile_table, [name])
         access_button = QPushButton(TxtDsu.BUTTON_ACCESS_PROFILE, self)
         access_button.clicked.connect(self._generate_button_handler(1, name))
         self.profile_table.setItemWidget(item, 1, access_button)
 
         delete_button = QPushButton(TxtDsu.BUTTON_DELETE_PROFILE, self)
-        delete_button.clicked.connect(self._generate_button_handler(2, name, item))
+        delete_button.clicked.connect(
+            self._generate_button_handler(2, name, item))
         self.profile_table.setItemWidget(item, 2, delete_button)
 
     # def admin_toggle_handler(self) -> None:  DEPRECATED, admin disabled
@@ -63,7 +83,8 @@ class ProfileMenu(QWidget):
         Prompt the user via dialog boxes for a username and password.
         Once both are received, create a new profile, and add it to the list.
         '''
-        username = pg().get_username_prompt(tuple(self.profiles)).get_response()
+        duplicates = tuple(self.profiles)
+        username = pg().get_username_prompt(duplicates).get_response()
 
         if not username:
             return
@@ -72,11 +93,12 @@ class ProfileMenu(QWidget):
             return
         self._create_row(username)
         self.profiles.append(username)
-        self.dsu_manager.create_profile(username, password)  # FIXME: We should give feedback to the user if successful or not
-        return
+        self.dsu_manager.create_profile(username, password)
+        return  # Should give feedback to the user if successful or not
 
     def _generate_button_handler(self, version: int, value: str,
-                                 item: QTreeWidgetItem = None) -> Callable[..., None]:
+                                 item: QTreeWidgetItem = None
+                                 ) -> Callable[..., None]:
         parent = self.profile_table
         profiles = self.profiles
         pm = self.dsu_manager
@@ -85,16 +107,19 @@ class ProfileMenu(QWidget):
             case 1:
                 def access_profile_handler():
                     if value in loaded_windows:
-                        pm.log(f"Already loaded {value}.", "access profile button handler")
+                        pm.log(f"Already loaded {value}.",
+                               "access profile button handler")
                     profile_viewer = ProfileWindow(value)
                     if profile_viewer.loaded:
                         profile_viewer.resize(600, 500)
                         profile_viewer.setWindowTitle(TxtPrf.WINDOW_PROFILE)
                         profile_viewer.show()
-                        pm.log(f"Viewing {value}", "access profile button handler")
+                        pm.log(f"Viewing {value}",
+                               "access profile button handler")
                         loaded_windows[value] = profile_viewer
                     else:
-                        pm.log(f"Unable to load {value}.", "access profile button handler")
+                        pm.log(f"Unable to load {value}.",
+                               "access profile button handler")
                 return access_profile_handler
             case 2:
                 def delete_profile_handler():
@@ -107,12 +132,15 @@ class ProfileMenu(QWidget):
                         if value in loaded_windows:  # close deleted profile
                             loaded_windows[value].close()
                     else:
-                        pass  # FIXME: Should give feedback to the user
+                        pass  # Should give feedback to the user
                 return delete_profile_handler
 
 
 # PROFILE VIEWER
 class ProfileWindow(QWidget):
+    '''
+    temp docstring
+    '''
     def __init__(self, name: str, admin: bool = False) -> None:
         super().__init__()
         self.admin = admin
@@ -147,8 +175,9 @@ class ProfileWindow(QWidget):
         #  edit_login_button = QPushButton(BUTTON_EDIT_LOGIN) DEPRECATED
         #  edit_login_button.clicked.connect(self._edit_login_handler)
 
-        for i, j in self.profile_manager.fetch_posts():  # for every post in the profile, create a new row in the table
-            self.profile_manager.log(f"Creating row with content {i} and time {j}", "profile viewer init")
+        for i, j in self.profile_manager.fetch_posts():
+            self.profile_manager.log(f"Added row with content {i}, time {j}",
+                                     "profile viewer init")
             self._create_row(i, j)  # i is a tuple with content and time
 
         layout = QGridLayout(self)
@@ -162,44 +191,35 @@ class ProfileWindow(QWidget):
         layout.addWidget(self.post_table, 2, 0, 1, 4 if self.admin else 3)
         self.setLayout(layout)
 
-    def _create_row(self, content: str, time: str) -> None:  # given a name, create an additional row in the list of posts
+    def _create_row(self, content: str, time: str) -> None:
+        '''
+        Create an additional row containing the post string and timestamp.
+        Adds functional buttons to the rows to edit, delete, or publish posts.
+
+        Parameters
+        --------
+        content : str
+            The contents of the post.
+        time : str
+            The timestamp of the post, as already formatted text.
+        '''
         item = QTreeWidgetItem(self.post_table, [content])
         self.post_table.setItemWidget(item, 1, QLabel(time))
 
         edit_button = QPushButton(TxtPrf.BUTTON_EDIT_POST, self)
-        edit_button.clicked.connect(self._generate_button_handler(1, item=item))
+        edit_button.clicked.connect(
+            self._generate_button_handler(1, item=item))
         self.post_table.setItemWidget(item, 2, edit_button)
 
         publish_button = QPushButton(TxtPrf.BUTTON_PUBLISH_POST, self)
-        publish_button.clicked.connect(self._generate_button_handler(3, item=item))
+        publish_button.clicked.connect(
+            self._generate_button_handler(3, item=item))
         self.post_table.setItemWidget(item, 3, publish_button)
 
         delete_button = QPushButton(TxtPrf.BUTTON_DELETE_POST, self)
-        delete_button.clicked.connect(self._generate_button_handler(2, item=item))
+        delete_button.clicked.connect(
+            self._generate_button_handler(2, item=item))
         self.post_table.setItemWidget(item, 4, delete_button)
-
-    def _create_post_handler(self) -> None:
-        content = pg().get_post_prompt().get_response()
-        if content:
-            self.profile_manager.log(f"attempting to add {content}", "create post button handler")
-            time = self.profile_manager.create_post(content)
-            self._create_row(content, time)
-
-    def _edit_bio_handler(self) -> None:
-        bio = pg().get_bio_prompt().get_response()
-        if bio:
-            self.profile_manager.edit_bio(bio)
-            self.bio_label.setText("Bio: " + bio)
-
-    def _publish_bio_handler(self) -> bool:
-        bio = self.profile_manager.get_profile_info()[2]
-        client = self._login_server(self.profile_manager)
-        if not client:
-            return False
-        return client.update_bio(bio)
-        
-            # if we fail to connect, set dsuserver back to nothing
-
 
     def _login_server(self, pm: ProfileManager) -> Client:
         if not pm.verify_joinable():
@@ -221,6 +241,27 @@ class ProfileWindow(QWidget):
                    "join button handler", True, username, password)
             return None
         return client
+
+    def _create_post_handler(self) -> None:
+        content = pg().get_post_prompt().get_response()
+        if content:
+            self.profile_manager.log(f"attempting to add {content}",
+                                     "create post button handler")
+            time = self.profile_manager.create_post(content)
+            self._create_row(content, time)
+
+    def _edit_bio_handler(self) -> None:
+        bio = pg().get_bio_prompt().get_response()
+        if bio:
+            self.profile_manager.edit_bio(bio)
+            self.bio_label.setText("Bio: " + bio)
+
+    def _publish_bio_handler(self) -> bool:
+        bio = self.profile_manager.get_profile_info()[2]
+        client = self._login_server(self.profile_manager)
+        if not client:
+            return False
+        return client.update_bio(bio)
 
     def _edit_login_handler(self) -> None:
         username = pg().get_edit_username_prompt().get_response()
@@ -267,6 +308,10 @@ class ProfileWindow(QWidget):
                     return publish_handler
 
 def main_gui():
+    '''
+    Main entry point to program. Automatically starts and opens
+    DSU client GUI.
+    '''
     app = QApplication([])
 
     window = ProfileMenu()

@@ -20,7 +20,7 @@ class DirectMessage:
     """
 
 
-class DirectMessenger:
+class DsuUtils:
     """
     Manages server connection, authentication, and sending/receiving messages.
     Requires server (string) and port (int)
@@ -124,51 +124,18 @@ class DirectMessenger:
             return True
         return False
 
-    def update_bio(self, bio: str) -> bool:
-        """
-        Sends the bio command to the server. Returns if successful or not.
 
-        Parameters
-        --------
-        bio : str
-            The text to update the bio into.
-        """
-        if not self._verify_nonblank(bio):
-            return False
-
-        bio_command = (r'{"token":"' +
-                       self.token +
-                       r'", "bio": {"entry": "' +
-                       bio +
-                       r'","timestamp": "' +
-                       str(time()) + r'"}}')
-        response = self._send_command(bio_command)
-
-        return response.type != "error"
-
-    def publish_post(self, msg: str) -> bool:
-        """
-        Sends the publish command to the server. Returns if successful or not.
-
-        Parameters
-        --------
-        msg : str
-            The text we wish to publish as a post to the server.
-        """
-        if not self._verify_nonblank(msg):
-            return False
-
-        publish_command = (r'{"token":"' +
-                           self.token +
-                           r'", "post": {"entry": "' +
-                           msg +
-                           r'","timestamp": "' +
-                           str(time()) +
-                           r'"}}')
-        response = self._send_command(publish_command)
-
-        return response.type != "error"
-
+class DirectMessenger(DsuUtils):
+    """
+    Manages connection, to send and receive DMs.
+    
+    Parameters
+    --------
+    server : str
+        IP address the client should attempt to connect to
+    port : int
+        The port of the IP address the client connects to
+    """
     def _get_dms(self, only_new: bool = False) -> list[DirectMessage]:
         """
         Gets directmessages from connected server and returns list.
@@ -223,3 +190,61 @@ class DirectMessenger:
         a list of DirectMessages
         """
         return self._get_dms()
+
+
+class PostPublisher(DsuUtils):
+    """
+    Manages connection, to publish post and bio.
+    Requires server (string) and port (int)
+    
+    Parameters
+    --------
+    server : str
+        IP address the client should attempt to connect to
+    port : int
+        The port of the IP address the client connects to
+    """
+    def update_bio(self, bio: str) -> bool:
+        """
+        Sends the bio command to the server. Returns if successful or not.
+
+        Parameters
+        --------
+        bio : str
+            The text to update the bio into.
+        """
+        if not self._verify_nonblank(bio):
+            return False
+
+        bio_command = (r'{"token":"' +
+                       self.token +
+                       r'", "bio": {"entry": "' +
+                       bio +
+                       r'","timestamp": "' +
+                       str(time()) + r'"}}')
+        response = self._send_command(bio_command)
+
+        return response.type != "error"
+
+    def publish_post(self, msg: str) -> bool:
+        """
+        Sends the publish command to the server. Returns if successful or not.
+
+        Parameters
+        --------
+        msg : str
+            The text we wish to publish as a post to the server.
+        """
+        if not self._verify_nonblank(msg):
+            return False
+
+        publish_command = (r'{"token":"' +
+                           self.token +
+                           r'", "post": {"entry": "' +
+                           msg +
+                           r'","timestamp": "' +
+                           str(time()) +
+                           r'"}}')
+        response = self._send_command(publish_command)
+
+        return response.type != "error"
