@@ -28,7 +28,7 @@ class ProfileMenu(QWidget):
                                          TxtDsu.HEADER_DELETE_PROFILE])
 
         for i in self.profiles:  # for every name in profile, create a new row in the table
-            self.create_row(i)
+            self._create_row(i)
 
         add_row_button = QPushButton(TxtDsu.BUTTON_CREATE_PROFILE)
         add_row_button.clicked.connect(self.create_profile_handler)
@@ -42,7 +42,7 @@ class ProfileMenu(QWidget):
         layout.addWidget(self.profile_table, 1, 0, 1, 2)
         self.setLayout(layout)
 
-    def create_row(self, name: str) -> None:  # given a name, create an additional row in the list of profiles
+    def _create_row(self, name: str) -> None:  # given a name, create an additional row in the list of profiles
         item = QTreeWidgetItem(self.profile_table, [name])
         access_button = QPushButton(TxtDsu.BUTTON_ACCESS_PROFILE, self)
         access_button.clicked.connect(self._generate_button_handler(1, name))
@@ -70,18 +70,18 @@ class ProfileMenu(QWidget):
         password = pg().get_password_prompt().get_response()
         if not password:
             return
-        self.create_row(username)
+        self._create_row(username)
         self.profiles.append(username)
         self.dsu_manager.create_profile(username, password)  # FIXME: We should give feedback to the user if successful or not
         return
 
-    def _generate_button_handler(self, type: int, value: str,
+    def _generate_button_handler(self, version: int, value: str,
                                  item: QTreeWidgetItem = None) -> Callable[..., None]:
         parent = self.profile_table
         profiles = self.profiles
         pm = self.dsu_manager
         loaded_windows = self.loaded_windows
-        match type:
+        match version:
             case 1:
                 def access_profile_handler():
                     if value in loaded_windows:
@@ -124,14 +124,14 @@ class ProfileWindow(QWidget):
                                          TxtPrf.HEADER_PUBLISH,
                                          TxtPrf.HEADER_DELETE])
 
-        self.profile_manager = ProfileManager(name, self.admin)  # handler for if unabe to load profile 
+        self.profile_manager = ProfileManager(name, self.admin)
         if not self.profile_manager.loaded:
             self.loaded = False
-            return
+            return  # handler for if unabe to load profile
         self.loaded = True
 
         add_row_button = QPushButton(TxtPrf.BUTTON_CREATE_POST)
-        add_row_button.clicked.connect(self.create_post_handler)
+        add_row_button.clicked.connect(self._create_post_handler)
 
         usn, pw, bio = self.profile_manager.get_profile_info()
         name_label = QLabel("Username: " + usn)
@@ -139,7 +139,7 @@ class ProfileWindow(QWidget):
         self.bio_label = QLabel("Bio: " + bio)
 
         edit_bio_button = QPushButton(TxtPrf.BUTTON_EDIT_BIO)
-        edit_bio_button.clicked.connect(self.edit_bio_handler)
+        edit_bio_button.clicked.connect(self._edit_bio_handler)
 
         self.pub_bio_button = QPushButton(TxtPrf.BUTTON_PUBLISH_BIO)
         self.pub_bio_button.clicked.connect(self._publish_bio_handler)
@@ -149,7 +149,7 @@ class ProfileWindow(QWidget):
 
         for i, j in self.profile_manager.fetch_posts():  # for every post in the profile, create a new row in the table
             self.profile_manager.log(f"Creating row with content {i} and time {j}", "profile viewer init")
-            self.create_row(i, j)  # i is a tuple with content and time
+            self._create_row(i, j)  # i is a tuple with content and time
 
         layout = QGridLayout(self)
         layout.addWidget(name_label, 0, 0)
@@ -162,7 +162,7 @@ class ProfileWindow(QWidget):
         layout.addWidget(self.post_table, 2, 0, 1, 4 if self.admin else 3)
         self.setLayout(layout)
 
-    def create_row(self, content: str, time: str) -> None:  # given a name, create an additional row in the list of posts
+    def _create_row(self, content: str, time: str) -> None:  # given a name, create an additional row in the list of posts
         item = QTreeWidgetItem(self.post_table, [content])
         self.post_table.setItemWidget(item, 1, QLabel(time))
 
@@ -178,14 +178,14 @@ class ProfileWindow(QWidget):
         delete_button.clicked.connect(self._generate_button_handler(2, item=item))
         self.post_table.setItemWidget(item, 4, delete_button)
 
-    def create_post_handler(self) -> None:
+    def _create_post_handler(self) -> None:
         content = pg().get_post_prompt().get_response()
         if content:
             self.profile_manager.log(f"attempting to add {content}", "create post button handler")
             time = self.profile_manager.create_post(content)
-            self.create_row(content, time)
+            self._create_row(content, time)
 
-    def edit_bio_handler(self) -> None:
+    def _edit_bio_handler(self) -> None:
         bio = pg().get_bio_prompt().get_response()
         if bio:
             self.profile_manager.edit_bio(bio)
