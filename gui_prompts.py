@@ -192,3 +192,12 @@ class PromptGenerator:
                             TxtPmt.POPUP_PROMPT_GET_PORT_BLANK)
         prompt.set_default_text(DEFAULT_PORT)
         return prompt
+
+    def get_friend_prompt(self):
+        '''
+        temp docstring
+        '''
+        prompt = UserPrompt(TxtPmt.POPUP_HEADER_ADD_FRIEND,
+                            TxtPmt.POPUP_PROMPT_GET_FRIEND,
+                            TxtPmt.POPUP_PROMPT_GET_FRIEND_BLANK)
+        return prompt

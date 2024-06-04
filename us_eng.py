@@ -57,7 +57,7 @@ class MsgEnglish:
     '''
     WINDOW_MSG = 'DSU Messenger'
 
-    BUTTON_ADD_FRIEND = 'Add Contact'
+    BUTTON_ADD_FRIEND = 'Add Friend'
     BUTTON_SEND_MSG = 'Send'
 
 
@@ -95,6 +95,6 @@ class PromptsEnglish:
     POPUP_PROMPT_GET_EDIT_BLANK = POPUP_PROMPT_GET_CONTENT_BLANK
 
     # ADD FRIEND
-    POPUP_ADD_FRIEND = 'Add a friend!'
+    POPUP_HEADER_ADD_FRIEND = 'Add a friend!'
     POPUP_PROMPT_GET_FRIEND = 'Enter friend name.'
     POPUP_PROMPT_GET_FRIEND_BLANK = "You can't be friends with nobody!"
