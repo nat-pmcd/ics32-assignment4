@@ -460,7 +460,7 @@ class MessengerWindow(QWidget):
 
     def _get_new_messages(self):
         messages = self.client.retrieve_new()
-        
+
         print(type(messages))
 
 
