@@ -129,7 +129,7 @@ class Friend(dict):
     def set_out_msgs(self, out_msgs: list[Post]):
         """
         Returns the list of your messages
-        """        
+        """
         self._out_msgs = out_msgs.copy() if out_msgs else []
         dict.__setitem__(self, 'out_msgs', self._out_msgs)
 
@@ -303,7 +303,7 @@ class Profile(dict):
         """
         posts = []
         if not obj:
-            return list().copy()
+            return [].copy()
 
         for post_obj in obj:
             post = Post(post_obj['entry'], post_obj['timestamp'])
