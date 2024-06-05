@@ -20,3 +20,4 @@ I violate using snake_case for certain methods, since I'm redefining parent meth
 Is the terminal output important at all? OR can we print whatever we'd like there?
 The assignment page mentions "dealing with possible exceptions and errors that may happen." If an error happens during runtime but which does not negatively affect the user experience, will this result in a penalty still?
 Do we need to submit with a Git and README as per the rubric?
+What's the expected behavior of DirectMessenger.retrieve_new() if we logged in with incorrect credentials? None? False? Error? Doesn't matter?
