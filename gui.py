@@ -289,7 +289,7 @@ class ProfileWindow(QWidget):
             pm.update_server_info(reset=True)
             pm.log(f"failed to join server {server}:{port}",
                    "join button handler", True, username, password)
-            return None
+            return client
         return client
 
     def _create_post_handler(self) -> None:
@@ -407,18 +407,32 @@ class MessengerWindow(QWidget):
         self.message_table.setRootIsDecorated(False)
         self.message_table.setStyleSheet("padding: 5 5px;")
 
-        friends_layout = QVBoxLayout()
-        friends_layout.addWidget(self.friend_table, stretch=5)
-        friends_layout.addWidget(add_friend_button)
-
         chat_layout = QVBoxLayout()
         chat_layout.addWidget(self.message_table, stretch=4)
-        chat_layout.addWidget(self.text_editor)
-        chat_layout.addWidget(send_button)
+        chat_layout.addWidget(self.text_editor, stretch=1)
 
-        split_layout = QHBoxLayout(self)
-        split_layout.addLayout(friends_layout, stretch=1)
-        split_layout.addLayout(chat_layout, stretch=2)
+        friends_label = QLabel(TxtMsg.HEADER_FRIENDS)
+        chat_label = QLabel(TxtMsg.HEADER_CHATBOX)
+        chat_label.setAlignment(Qt.AlignRight)
+        header_layout = QHBoxLayout()
+        header_layout.addWidget(friends_label)
+        header_layout.addWidget(chat_label)
+
+        self.status_label = QLabel(TxtMsg.STATUS_OK)
+        self.status_label.setAlignment(Qt.AlignCenter)
+        footer_layout = QHBoxLayout()
+        footer_layout.addWidget(add_friend_button, stretch=1)
+        footer_layout.addWidget(self.status_label, stretch=2)
+        footer_layout.addWidget(send_button, stretch=1)
+
+        message_layout = QHBoxLayout()
+        message_layout.addWidget(self.friend_table, stretch=1)
+        message_layout.addLayout(chat_layout, stretch=2)
+
+        layout = QVBoxLayout(self)
+        layout.addLayout(header_layout)
+        layout.addLayout(message_layout)
+        layout.addLayout(footer_layout)
 
     def _add_friend_row(self, friend: str):
         item = QTreeWidgetItem(self.friend_table, [friend])

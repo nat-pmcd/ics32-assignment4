@@ -65,6 +65,9 @@ class MsgEnglish:
     BUTTON_SEND_MSG = 'Send'
     EDITOR_PROMPT_MSG = 'Type a message...'
 
+    STATUS_OK = 'Connected to server'
+    STATUS_BAD = 'Failed to connect to server'
+
 
 class PromptsEnglish:
     '''
