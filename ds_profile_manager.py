@@ -8,8 +8,8 @@ temp docstring
 
 from pathlib import Path
 from datetime import datetime
-from ds_profile import Profile, Post, Friend
 from time import time as get_time
+from ds_profile import Profile, Post, Friend
 
 DIRECTORY_NAME = "dsu_profiles"
 
@@ -46,12 +46,17 @@ class ProfileUtils:
         return content, time
 
     def convert_time(self, inp_time: str, current: int = 0):
+        '''
+        Given a string representation of a float, convert it into a text of
+        the corresponding date. If includes current, truncates timestamp
+        depending on how recent the input date was.
+        '''
         int_time = int(float(inp_time))
         time = datetime.fromtimestamp(int(int_time))
         if current == 0:  # full timestamp
             strtime = time.strftime('%Y/%m/%d %H:%M')
         elif current - int_time < 43200:  # only month and day
-            strtime = time.strftime('%H:%M:%S')
+            strtime = time.strftime('%H:%M')
         elif current - int_time < 15811200:  # only month and day
             strtime = time.strftime('%M %d')
         else:  # year month day
@@ -60,7 +65,7 @@ class ProfileUtils:
 
     def _get_path(self, usn: str = None) -> Path:
         """
-        temp docstring
+        Returns the path of the file of a profile's dsu file.
         """
         direc_path = Path.cwd() / Path(DIRECTORY_NAME)
         return direc_path / Path(usn + ".dsu") if usn else direc_path
@@ -68,7 +73,9 @@ class ProfileUtils:
     def _create_profile(self, usn: str = None, pw: str = None,
                        profile: Profile = None) -> bool:
         """
-        temp docstring
+        Given a username and password, creates and saves that profile
+        to a new .dsu file. If profile is given instead, saves that
+        profile instead.
         """
         try:
             if profile is None:
@@ -79,27 +86,25 @@ class ProfileUtils:
             profile.save_profile(path)
             return True
         except Exception as exc:
-            self.log("failure when creating profile",
-                       "create profile", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def _delete_profile(self, usn: str) -> bool:
         """
-        temp docstring
+        Given a username, deletes the .dsu file from the directory.
         """
         try:
             path = self._get_path(usn)
             path.unlink()
             return True
         except Exception as exc:
-            self.log("failure when deleting profile",
-                       "delete profile", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
 
     def _fetch_profiles(self) -> list[str]:
         """
-        temp docstring
+        Gets the usernames from all the .dsu files from the directory.
         """
         profiles = []
 
@@ -111,7 +116,7 @@ class ProfileUtils:
 
 class DsuManager(ProfileUtils):
     """
-    temp docstring
+    Manages profile creation, fetching, and deletion.
     """
     def __init__(self, admin: bool = False) -> None:
         super().__init__(admin)
@@ -149,7 +154,8 @@ class DsuManager(ProfileUtils):
 
 class ProfileManager(ProfileUtils):
     """
-    temp docstring
+    Able to manage specific profile, to access, save, verify, and
+    modify server details.
     """
     def __init__(self, username: str, admin: bool = False) -> None:
         super().__init__(admin)
@@ -166,9 +172,8 @@ class ProfileManager(ProfileUtils):
             self.posts = self.profile.get_posts()
             return True
         except Exception as exc:
-            self.log("failure when opening profile",
-                     "pm init profile", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def save_profile(self) -> bool:
         """
@@ -179,9 +184,8 @@ class ProfileManager(ProfileUtils):
             self.profile.save_profile(path)
             return True
         except Exception as exc:
-            self.log("failure when saving profile",
-                     "pm save profile", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def access_profile(self, usn: str) -> Profile:
         """
@@ -193,9 +197,8 @@ class ProfileManager(ProfileUtils):
             profile.load_profile(path)
             return profile
         except Exception as exc:
-            self.log("failure accessing profile",
-                     "pm access profile", type(exc), exc, error=True)
-            return None
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def get_profile_info(self) -> tuple:
         """
@@ -221,9 +224,8 @@ class ProfileManager(ProfileUtils):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure updating server", "pm update serv info",
-                     type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def verify_joinable(self) -> bool:
         """
@@ -234,6 +236,9 @@ class ProfileManager(ProfileUtils):
         return self.profile.dsuserver is not None
 
 class PostManager(ProfileManager):
+    '''
+    Manages editing profile's bio, username, password, and posts.
+    '''
     def edit_bio(self, content: str) -> bool:
         """
         temp docstring
@@ -243,13 +248,12 @@ class PostManager(ProfileManager):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing bio",
-                     "pm edit bio", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def edit_usn(self, content: str) -> bool:
         """
-        temp docstring
+        Edits username of profile, and saves to new .dsu file.
         """
         if content not in self._fetch_profiles():
             self._delete_profile(self.profile.username)
@@ -261,16 +265,15 @@ class PostManager(ProfileManager):
 
     def edit_pw(self, content: str) -> bool:
         """
-        temp docstring
+        Edits password of profile and saves.
         """
         try:
             self.profile.password = content
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing pw",
-                     "pm edit pw", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def create_post(self, content: str) -> str:
         """
@@ -284,7 +287,8 @@ class PostManager(ProfileManager):
 
     def edit_post(self, index: int, content: str) -> bool:
         """
-        temp docstring
+        Given the index of a post, replace its contents with a new
+        string and save profile.
         """
         try:
             post = self.profile.get_posts()[index]
@@ -292,26 +296,25 @@ class PostManager(ProfileManager):
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when editing post", "pm edit post",
-                     type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def del_post(self, index: int) -> bool:
         """
-        temp docstring
+        Given the index of a post, deletes it and saves the profile.
         """
         try:
             self.profile.del_post(index)
             self.save_profile()
             return True
         except Exception as exc:
-            self.log("failure when deleting post", "pm del post",
-                     type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def index_post(self, index: int) -> tuple:
         """
-        temp docstring
+        Given the index of a post, returns a tuple of the post's
+        content and timestamp.
         """
         post = self.posts[index]
         content, time = self._get_post_info(post)
@@ -319,20 +322,24 @@ class PostManager(ProfileManager):
 
     def fetch_posts(self):
         """
-        temp docstring
+        Iterable for tuple pairs of the content and timestamp of the
+        profile's posts.
         """
         for i in self.posts:
             content, time = self._get_post_info(i)
             yield content, time
 
 class DmManager(ProfileManager):
+    '''
+    Manages user's friends and chat messages.
+    '''
     def __init__(self, username: str, admin: bool = False) -> None:
         super().__init__(username, admin)
         self.loaded_friend: Friend = None
 
     def _init_profile(self, username: str) -> bool:
         """
-        temp docstring
+        Loads profile of specific username.
         """
         try:
             self.log(f"Attempting to access {username}", "pm init_profile")
@@ -340,13 +347,12 @@ class DmManager(ProfileManager):
             self.friends = self.profile.get_friends()
             return True
         except Exception as exc:
-            self.log("failure when opening profile",
-                     "pm init messenger", type(exc), exc, error=True)
-            return False
+            print(f"Unexpected {exc}: {type(exc)}")
+            raise
 
     def load_friend(self, friend: str) -> bool:
         '''
-        set loaded_friend to the username we loaded
+        From the loaded profile, load the DMs of a friend of that profile.
         '''
         names = [i.get_name() for i in self.friends]
         try:
@@ -357,6 +363,9 @@ class DmManager(ProfileManager):
         return True
 
     def save_friend(self) -> bool:
+        '''
+        Saves the currently loaded friend and all their messages.
+        '''
         names = [i.get_name() for i in self.friends]
         target_name = self.loaded_friend.get_name()
         try:
@@ -372,6 +381,9 @@ class DmManager(ProfileManager):
         return False
 
     def fetch_friends(self) -> list[Friend]:
+        '''
+        Returns a list of friends the loaded profile has.
+        '''
         return self.friends
 
     def add_friend(self, friend: str,
@@ -388,6 +400,10 @@ class DmManager(ProfileManager):
         return friend
 
     def load_texts(self) -> list[tuple[Post, str]]:
+        '''
+        From the loaded friend, get all the DMs to and from, and return
+        a sorted list containing tuples of the message and the sender.
+        '''
         my_name = self.profile.username
         thr_name = self.loaded_friend.get_name()
 
@@ -404,6 +420,10 @@ class DmManager(ProfileManager):
 
     def add_text(self, text: str, timestamp: float = get_time(),
                  recipient: bool = True) -> bool:
+        '''
+        Given a text and timestamp, adds the text to the profile's messages
+        and saves.
+        '''
         new_text = Post(text)
         new_text.set_time(timestamp)
         if recipient:
