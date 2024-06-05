@@ -541,8 +541,8 @@ class MessengerWindow(QWidget):
         '''
         messages = self.client.retrieve_new()
         if messages is None:
-            err = self.client.error
-            msg = TxtMsg.STATUS_BAD if err is False else TxtMsg.STATUS_LOG
+            err_con = self.client.error == "connection"
+            msg = TxtMsg.STATUS_BAD if err_con else TxtMsg.STATUS_LOG
             self.status_label.setText(msg)
             return []
         messages.sort(key=lambda message: message.recipient)
