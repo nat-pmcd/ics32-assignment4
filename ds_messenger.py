@@ -8,7 +8,7 @@ and PostPublisher to send bio and posts to server.
 """
 
 import socket
-from time import time
+from time import time as get_time
 import ds_protocol as dsp
 PORT = 6000
 SERVER = "localhost"
@@ -25,7 +25,7 @@ class DirectMessage:
 
     def set_message(self, text) -> None:
         self.message = text
-        self.timestamp = time.time()
+        self.timestamp = get_time()
 
 class DsuUtils:
     """
