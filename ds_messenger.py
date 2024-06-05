@@ -16,7 +16,7 @@ LATENCY = 0
 
 class DirectMessage:
     """
-    temp docstring
+    Stores message information.
     """
     def __init__(self) -> None:
         self.recipient = None
