@@ -495,18 +495,23 @@ class MessengerWindow(QWidget):
 
         return handler
 
-    def _add_msg_row(self, text, timestamp: str, left: bool = True):
+    def _add_msg_row(self, text: str, timestamp: str, left: bool = True):
+        '''
+        Given some text and a timestamp, prints message to the message table.
+        [TIMESTAMP]
+        [MESSAGE]
+        '''
         item = QTreeWidgetItem(self.message_table, [text])
         label = QLabel(timestamp + "\n" + text)
         alignment = Qt.AlignLeft if left else Qt.AlignRight
         label.setAlignment(alignment)
         self.message_table.setItemWidget(item, 0, label)
 
-    def _clear_msgs(self):
-        mt = self.message_table
-        mt.clear()
-
     def _update_msgs(self):
+        '''
+        Attempts to get new messages from the server. If there are new messages
+        then update the .dsu file and add it to GUI.
+        '''
         friend = self.message_manager.loaded_friend
         target = friend.get_name() if friend else None
         new_msgs = self._get_new_messages(target)
@@ -515,6 +520,9 @@ class MessengerWindow(QWidget):
             self._add_msg_row(i[0], time)
 
     def _send_handler(self):
+        '''
+        Handler for pressing enter or pressing send button.
+        '''
         if not self.message_manager.loaded_friend:
             return  # user attempted to send while nothing loaded
         friend = self.message_manager.loaded_friend.get_name()
@@ -528,6 +536,9 @@ class MessengerWindow(QWidget):
         self._add_msg_row(current_text, time, left=False)
 
     def _enter_handler(self, key):
+        '''
+        Wrapper around send_handler, with filter for if key is enter or not.
+        '''
         if key == Qt.Key.Key_Return:
             self._send_handler()
 
@@ -547,6 +558,9 @@ class MessengerWindow(QWidget):
 
     def _get_new_messages(self, target: str = None
                           ) -> list[tuple[str]]:
+        '''
+        Getse all new messages from the server
+        '''
         messages = self.client.retrieve_new()
         if messages is False:
             self.status_label.setText(TxtMsg.STATUS_BAD)
