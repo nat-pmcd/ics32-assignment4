@@ -12,8 +12,9 @@ from typing import Callable
 from time import time as get_time
 from PySide6.QtGui import QCloseEvent, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
-    QPushButton, QWidget, QLabel, QGridLayout, QPlainTextEdit)
-from PySide6.QtCore import Qt, QTimer, QEvent ,Signal
+    QPushButton, QHBoxLayout, QWidget, QLabel, QGridLayout, QPlainTextEdit,
+    QVBoxLayout)
+from PySide6.QtCore import Qt, QTimer, Signal
 from ds_profile_manager import DsuManager, PostManager, DmManager
 from ds_messenger import PostPublisher, DirectMessenger
 from gui_prompts import PromptGenerator as pg
@@ -39,6 +40,8 @@ class ProfileMenu(QWidget):
         self.profile_table = QTreeWidget()  # create a table w 3 cols
         self.profile_table.setColumnCount(4)
         self.profile_table.setHeaderHidden(True)
+        self.profile_table.setRootIsDecorated(False)
+        self.profile_table.setStyleSheet("padding: 5 5px;")
 
         for i in self.profiles:  # for every profile, create a row
             self._create_row(i)
@@ -212,6 +215,7 @@ class ProfileWindow(QWidget):
                                          TxtPrf.HEADER_EDIT,
                                          TxtPrf.HEADER_PUBLISH,
                                          TxtPrf.HEADER_DELETE])
+        self.post_table.setRootIsDecorated(False)
 
         usn, pw, bio = self.profile_manager.get_profile_info()
         name_label = QLabel(TxtPrf.LABEL_NAME + usn)
@@ -380,6 +384,8 @@ class MessengerWindow(QWidget):
     def _draw(self) -> None:
         self.friend_table = QTreeWidget()
         self.friend_table.setHeaderHidden(True)
+        self.friend_table.setRootIsDecorated(False)
+        self.friend_table.setStyleSheet("padding: 5 5px;")
 
         self.text_editor = EPlainTextEdit()
         self.text_editor.setPlaceholderText(TxtMsg.EDITOR_PROMPT_MSG)
@@ -398,16 +404,21 @@ class MessengerWindow(QWidget):
 
         self.message_table = QTreeWidget()
         self.message_table.setHeaderHidden(True)
+        self.message_table.setRootIsDecorated(False)
+        self.message_table.setStyleSheet("padding: 5 5px;")
 
-        layout = QGridLayout(self)
-        layout.addWidget(self.friend_table, 0, 0, 2, 1)
-        layout.addWidget(self.message_table, 0, 1)
-        layout.addWidget(self.text_editor, 1, 1)
-        layout.addWidget(send_button, 2, 1)
-        layout.addWidget(add_friend_button, 2, 0)
-        layout.setRowStretch(2,1)
+        friends_layout = QVBoxLayout()
+        friends_layout.addWidget(self.friend_table, stretch=5)
+        friends_layout.addWidget(add_friend_button)
 
-        self.setLayout(layout)
+        chat_layout = QVBoxLayout()
+        chat_layout.addWidget(self.message_table, stretch=4)
+        chat_layout.addWidget(self.text_editor)
+        chat_layout.addWidget(send_button)
+
+        split_layout = QHBoxLayout(self)
+        split_layout.addLayout(friends_layout, stretch=1)
+        split_layout.addLayout(chat_layout, stretch=2)
 
     def _add_friend_row(self, friend: str):
         item = QTreeWidgetItem(self.friend_table, [friend])
