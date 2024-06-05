@@ -5,7 +5,7 @@
 # pylint: disable = no-name-in-module
 
 '''
-Temp docstring
+Contains the localizations and prompt generator for GUI.
 '''
 
 from PySide6.QtWidgets import QInputDialog
@@ -20,7 +20,7 @@ TxtPmt = us_eng.PromptsEnglish
 
 class UserPrompt(QInputDialog):
     """
-    Temp docstring
+    Class for user prompt, to check if input is blank or not.
     """
     def __init__(self, window_name: str, prompt_text: str,
                  empty_text: str) -> None:
@@ -32,7 +32,8 @@ class UserPrompt(QInputDialog):
 
     def get_response(self):
         '''
-        temp docstring
+        Resets labels and loops until user enters valid
+        input or quits.
         '''
         self.setLabelText(self.prompt_text)
         self.setTextValue(str(self.default_text))
@@ -45,29 +46,35 @@ class UserPrompt(QInputDialog):
 
     def append_prompt(self, text: str):
         '''
-        temp docstring
+        Appends text to the prompt
         '''
         self.prompt_text += text
 
     def set_default_text(self, text: str):
         '''
-        temp docstring
+        Sets the defualt text in the dialog box.
         '''
         self.default_text = text
 
-    def _check_valid(self):
+    def _check_valid(self) -> bool:
+        '''
+        Returns if the input is valid.
+        '''
         if self._check_blanks():
             self.setLabelText(self.empty_text)
             return False
         return True
 
     def _check_blanks(self) -> bool:
+        '''
+        Returns if the input is not whitespace or empty.
+        '''
         return not self.textValue() or self.textValue().isspace()
 
 
 class UniquePrompt(UserPrompt):
     '''
-    Temp docstring
+    Child of prompt, now enforces uniqueness.
     '''
     def __init__(self, window_name: str, prompt_text: str,
                  empty_text: str, dupe_text: str) -> None:
@@ -77,11 +84,14 @@ class UniquePrompt(UserPrompt):
 
     def set_duplicate_list(self, lst: tuple) -> None:
         '''
-        temp docstring
+        Sets the list to check for duplicates of.
         '''
         self.dupe_list = lst
 
-    def _check_valid(self):
+    def _check_valid(self) -> bool:
+        '''
+        Checks for blanks and duplicates. If neither, returns true.
+        '''
         if not super()._check_valid():
             return False
         if self._check_duplicate():
@@ -90,19 +100,22 @@ class UniquePrompt(UserPrompt):
         return True
 
     def _check_duplicate(self) -> bool:
+        '''
+        Returns if inputted value is not duplicate
+        '''
         return self.textValue() in self.dupe_list
 
 
 class PromptGenerator:
     '''
-    temp docstring
+    Class to return prompts.
     '''
     def __init__(self) -> None:
         pass
 
     def get_username_prompt(self, other_usernames):
         '''
-        temp docstring
+        Prompt for getting username in profile creation.
         '''
         prompt = UniquePrompt(TxtPmt.POPUP_HEADER_CREATE_PROFILE,
                               TxtPmt.POPUP_PROMPT_GET_NAME,
@@ -114,7 +127,7 @@ class PromptGenerator:
 
     def get_password_prompt(self):
         '''
-        temp docstring
+        Prompt for getting password in profile creation.
         '''
         prompt = UserPrompt(TxtPmt.POPUP_HEADER_CREATE_PROFILE,
                             TxtPmt.POPUP_PROMPT_GET_PW,
@@ -124,7 +137,7 @@ class PromptGenerator:
 
     def get_post_prompt(self):
         '''
-        temp docstring
+        Prompt for getting post content in post creation.
         '''
         prompt = UserPrompt(TxtPmt.POPUP_HEADER_CREATE_POST,
                             TxtPmt.POPUP_PROMPT_GET_CONTENT,
@@ -134,7 +147,7 @@ class PromptGenerator:
 
     def get_bio_prompt(self):
         '''
-        temp docstring
+        Prompt for getting bio in bio editing.
         '''
         prompt = UserPrompt(TxtPmt.POPUP_HEADER_EDIT_BIO,
                             TxtPmt.POPUP_PROMPT_GET_BIO,
@@ -144,7 +157,8 @@ class PromptGenerator:
 
     def get_edit_username_prompt(self):
         '''
-        temp docstring
+        Prompt for getting username in editing login.
+        Intended only for admin. Deprecated.
         '''
         prompt = UserPrompt("ADMIN: ENTER USERNAME",
                             "ENTER USERNAME",
@@ -154,7 +168,8 @@ class PromptGenerator:
 
     def get_edit_password_prompt(self):
         '''
-        temp docstring
+        Prompt for getting password in editing login.
+        Intended only for admin. Deprecated.
         '''
         prompt = UserPrompt("ADMIN: ENTER PASSWORD",
                             "ENTER PASSWORD",
@@ -164,7 +179,7 @@ class PromptGenerator:
 
     def get_edit_post_prompt(self, past_post):
         '''
-        temp docstring
+        Prompt for getting new post content in post editing.
         '''
         prompt = UserPrompt(TxtPmt.POPUP_HEADER_EDIT_POST,
                             TxtPmt.POPUP_PROMPT_GET_EDIT + past_post,
@@ -174,7 +189,7 @@ class PromptGenerator:
 
     def get_host_prompt(self):
         '''
-        temp docstring
+        Prompt for getting host IP when joining server.
         '''
         prompt = UserPrompt(TxtPmt.POPUP_HEADER_SERVER,
                             TxtPmt.POPUP_PROMPT_GET_IP + DEFAULT_IP,
@@ -184,7 +199,7 @@ class PromptGenerator:
 
     def get_port_prompt(self):
         '''
-        temp docstring
+        Prompt for getting host port when joining server.
         '''
         prompt = UserPrompt(TxtPmt.POPUP_HEADER_SERVER,
                             TxtPmt.POPUP_PROMPT_GET_PORT +
@@ -195,7 +210,7 @@ class PromptGenerator:
 
     def get_friend_prompt(self, lst: list):
         '''
-        temp docstring
+        Prompt for getting friend when adding friend.
         '''
         prompt = UniquePrompt(TxtPmt.POPUP_HEADER_ADD_FRIEND,
                             TxtPmt.POPUP_PROMPT_GET_FRIEND,
