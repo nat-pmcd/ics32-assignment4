@@ -65,6 +65,7 @@ class DsuUtils:
         self.socket = None
         self._usn = None
         self._pw = None
+        self.error = None
 
     def _connect_to_server(self) -> bool:
         """
@@ -142,6 +143,7 @@ class DsuUtils:
         self._pw = password
 
         if not self.socket and not self._connect_to_server():
+            self.error = False
             return False
 
         join_command = (r'{"join": {"username": "' +
@@ -155,6 +157,7 @@ class DsuUtils:
         if response.type == "ok":
             self.token = response.token
             return True
+        self.error = None
         return False
 
 
@@ -180,7 +183,8 @@ class DirectMessenger(DsuUtils):
         """
 
         if not self.token and not self.login(self._usn, self._pw):
-            return False
+            self.error = None
+            return None
 
         request_command = (r'{"token":"' +
                            self.token +
@@ -190,9 +194,11 @@ class DirectMessenger(DsuUtils):
         response = self._send_command(request_command)
 
         if response.type == "error":
+            self.error = None
             return None
         if response.type == "disconnected":
-            return False
+            self.error = False
+            return None
 
         all_messages = []
         for i in response.messages:

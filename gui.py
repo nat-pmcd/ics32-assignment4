@@ -537,11 +537,13 @@ class MessengerWindow(QWidget):
     def _get_new_messages(self, target: str = None
                           ) -> list[tuple[str]]:
         '''
-        Getse all new messages from the server
+        Gets all new messages from the server
         '''
         messages = self.client.retrieve_new()
-        if messages is False:
-            self.status_label.setText(TxtMsg.STATUS_BAD)
+        if messages is None:
+            err = self.client.error
+            msg = TxtMsg.STATUS_BAD if err is False else TxtMsg.STATUS_LOG
+            self.status_label.setText(msg)
             return []
         messages.sort(key=lambda message: message.recipient)
         self.status_label.setText(TxtMsg.STATUS_OK)
