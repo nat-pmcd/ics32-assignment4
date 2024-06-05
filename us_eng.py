@@ -66,7 +66,7 @@ class MsgEnglish:
     EDITOR_PROMPT_MSG = 'Type a message...'
 
     STATUS_OK = 'Connected to server'
-    STATUS_BAD = 'Failed to connect to server'
+    STATUS_BAD = 'Connection failed, retrying...'
 
 
 class PromptsEnglish:

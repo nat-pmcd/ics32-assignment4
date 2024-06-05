@@ -65,7 +65,7 @@ def listen(conn: Connection) -> Response:  # wrapper for receive response
         return _read_response(conn)
     except TimeoutError as exc:
         print(f"Unexpected {exc} when listening: {type(exc)}")
-        return Response(None, "error", "Server timed out!", None)
+        return Response(None, "disconnected", "Server timed out!", None, None)
 
 
 def _extract_json(json_msg: str) -> Response:

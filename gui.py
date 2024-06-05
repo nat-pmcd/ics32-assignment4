@@ -69,10 +69,9 @@ class ProfileMenu(QWidget):
         server, port, username, password = pm.get_server_info()
         client = DirectMessenger(server, port)
         if not client.login(username, password):
-            pm.update_server_info(reset=True)
             pm.log(f"failed to join server {server}:{port}",
                    "join button handler", True, username, password)
-            return None
+            return client
         return client
 
     def _create_row(self, name: str) -> None:
@@ -289,7 +288,7 @@ class ProfileWindow(QWidget):
             pm.update_server_info(reset=True)
             pm.log(f"failed to join server {server}:{port}",
                    "join button handler", True, username, password)
-            return client
+            return None
         return client
 
     def _create_post_handler(self) -> None:
@@ -515,7 +514,11 @@ class MessengerWindow(QWidget):
     def _get_new_messages(self, target: str = None
                           ) -> list[tuple[str]]:
         messages = self.client.retrieve_new()
+        if messages is False:
+            self.status_label.setText(TxtMsg.STATUS_BAD)
+            return []
         messages.sort(key=lambda message: message.recipient)
+        self.status_label.setText(TxtMsg.STATUS_OK)
         recipient = ''
         new_target_messages = []
         for i in messages:

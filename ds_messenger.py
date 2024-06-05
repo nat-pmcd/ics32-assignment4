@@ -47,6 +47,8 @@ class DsuUtils:
         self.port = port
         self.token = None
         self.socket = None
+        self._usn = None
+        self._pw = None
 
     def _connect_to_server(self) -> bool:
         """
@@ -76,7 +78,7 @@ class DsuUtils:
         self._connect_to_server()
         if not self.socket:
             print("Could not connect to server.")
-            return None
+            return dsp.Response(None, "disconnected", "Could not connect to server!", None, None)
 
         conn = dsp.init(self.socket)
         resp = dsp.send_command(conn, command)
@@ -119,18 +121,21 @@ class DsuUtils:
         password : str
             The `password` of the account we're logging into
         """
+        self._usn = username
+        self._pw = password
+
         if not self.socket and not self._connect_to_server():
             return False
 
         join_command = (r'{"join": {"username": "' +
-                        username +
+                        self._usn +
                         r'","password": "' +
-                        password +
+                        self._pw +
                         r'","token":""}}')
 
         response = self._send_command(join_command)
 
-        if response.type != "error":
+        if response.type == "ok":
             self.token = response.token
             return True
         return False
@@ -156,6 +161,10 @@ class DirectMessenger(DsuUtils):
         only_new : bool
             If True, returns only new messages.
         """
+
+        if not self.token and not self.login(self._usn, self._pw):
+            return False
+
         request_command = (r'{"token":"' +
                            self.token +
                            r'", "directmessage": "' +
@@ -165,6 +174,8 @@ class DirectMessenger(DsuUtils):
 
         if response.type == "error":
             return None
+        if response.type == "disconnected":
+            return False
 
         all_messages = []
         for i in response.messages:
@@ -186,6 +197,9 @@ class DirectMessenger(DsuUtils):
         recipient : str
             The `recipient` who we intend on sending `message` to.
         """
+        if not self.token and not self.login(self._usn, self._pw):
+            return False
+
         if not self._verify_nonblank(message):
             return False
         if not self._verify_nonblank(recipient):
@@ -202,7 +216,7 @@ class DirectMessenger(DsuUtils):
                            r'}}')
         response = self._send_command(dm_command)
 
-        return response.type != "error"
+        return response.type == "ok"
 
     def retrieve_new(self) -> list[DirectMessage]:
         """
