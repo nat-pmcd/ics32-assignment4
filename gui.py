@@ -41,7 +41,7 @@ class ProfileMenu(QWidget):
 
     def _draw(self) -> None:
         '''
-        Draws all elements of the GUI
+        Draws all elements of the GUI for ProfileMenu
         '''
         self.profile_table = QTreeWidget()  # create a table w 3 cols
         self.profile_table.setColumnCount(4)
@@ -226,7 +226,7 @@ class ProfileWindow(QWidget):
 
     def _draw(self) -> None:
         '''
-        Draws all GUI elements.
+        Draws all GUI elements for ProfileWindow.
         '''
         self.post_table = QTreeWidget()
         self.post_table.setColumnCount(5)
@@ -407,7 +407,7 @@ class MessengerWindow(QWidget):
 
     def _draw(self) -> None:
         '''
-        Draws all GUI elements.
+        Draws all GUI elements for MessengerWindow.
         '''
         self.friend_table = QTreeWidget()
         self.friend_table.setHeaderHidden(True)
@@ -433,6 +433,7 @@ class MessengerWindow(QWidget):
         self.message_table.setHeaderHidden(True)
         self.message_table.setRootIsDecorated(False)
         self.message_table.setStyleSheet("padding: 5 5px;")
+        self._add_msg_row('', '')
 
         chat_layout = QVBoxLayout()
         chat_layout.addWidget(self.message_table, stretch=4)
@@ -490,17 +491,16 @@ class MessengerWindow(QWidget):
                 text = message_post.get_entry()
                 time = mm.convert_time(message_post.get_time(), get_time())
                 left = message_sender == username
-                self._add_msg_row(text, self.message_table, time, left)
+                self._add_msg_row(text, time, left)
 
         return handler
 
-    def _add_msg_row(self, text, table: QTreeWidget,
-                     timestamp: str, left: bool = True):
-        item = QTreeWidgetItem(table, [text])
+    def _add_msg_row(self, text, timestamp: str, left: bool = True):
+        item = QTreeWidgetItem(self.message_table, [text])
         label = QLabel(timestamp + "\n" + text)
         alignment = Qt.AlignLeft if left else Qt.AlignRight
         label.setAlignment(alignment)
-        table.setItemWidget(item, 0, label)
+        self.message_table.setItemWidget(item, 0, label)
 
     def _clear_msgs(self):
         mt = self.message_table
@@ -512,7 +512,7 @@ class MessengerWindow(QWidget):
         new_msgs = self._get_new_messages(target)
         for i in new_msgs:
             time = self.message_manager.convert_time(i[1], get_time())
-            self._add_msg_row(i[0], self.message_table, time)
+            self._add_msg_row(i[0], time)
 
     def _send_handler(self):
         if not self.message_manager.loaded_friend:
@@ -525,7 +525,7 @@ class MessengerWindow(QWidget):
         self.text_editor.setPlainText('')
         self.message_manager.add_text(current_text, raw_time, recipient=False)
         time = self.message_manager.convert_time(raw_time, raw_time - 1)
-        self._add_msg_row(current_text, self.message_table, time, left=False)
+        self._add_msg_row(current_text, time, left=False)
 
     def _enter_handler(self, key):
         if key == Qt.Key.Key_Return:
