@@ -18,7 +18,14 @@ class DirectMessage:
     """
     temp docstring
     """
+    def __init__(self) -> None:
+        self.recipient = None
+        self.message = None
+        self.timestamp = None
 
+    def set_message(self, text) -> None:
+        self.message = text
+        self.timestamp = time.time()
 
 class DsuUtils:
     """

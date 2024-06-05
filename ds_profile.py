@@ -130,14 +130,14 @@ class Friend(dict):
         """
         Returns the list of your messages
         """        
-        self._out_msgs = out_msgs.copy() if out_msgs else None
+        self._out_msgs = out_msgs.copy() if out_msgs else []
         dict.__setitem__(self, 'out_msgs', self._out_msgs)
 
     def set_in_msgs(self, in_msgs: list[Post]):
         """
         Returns the list of their messages
         """
-        self._in_msgs = in_msgs.copy() if in_msgs else None
+        self._in_msgs = in_msgs.copy() if in_msgs else []
         dict.__setitem__(self, 'in_msgs', self._in_msgs)
 
     name = property(get_name, set_name)

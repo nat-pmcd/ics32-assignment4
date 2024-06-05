@@ -41,10 +41,20 @@ class ProfileUtils:
         temp docstring
         """
         content = post.get_entry()
-        time = datetime.fromtimestamp(post.get_time())
-        strtime = time.strftime('%Y-%m-%d %H:%M:%S')
-        return content, strtime
+        time = self.convert_time(post.get_time())
+        return content, time
 
+    def convert_time(self, int_time: int, current: int = 0):
+        time = datetime.fromtimestamp(int_time)
+        if current == 0:  # full timestamp
+            strtime = time.strftime('%Y/%m/%d %H:%M')
+        elif current - int_time < 43200:  # only month and day
+            strtime = time.strftime('%H:%M')
+        elif current - int_time < 15811200:  # only month and day
+            strtime = time.strftime('%M %d')
+        else:  # year month day
+            strtime = time.strftime('%Y/%m/%d')
+        return strtime
 
     def _get_path(self, usn: str = None) -> Path:
         """
@@ -52,7 +62,6 @@ class ProfileUtils:
         """
         direc_path = Path.cwd() / Path(DIRECTORY_NAME)
         return direc_path / Path(usn + ".dsu") if usn else direc_path
-
 
     def _create_profile(self, usn: str = None, pw: str = None,
                        profile: Profile = None) -> bool:
@@ -71,7 +80,6 @@ class ProfileUtils:
             self.log("failure when creating profile",
                        "create profile", type(exc), exc, error=True)
             return False
-
 
     def _delete_profile(self, usn: str) -> bool:
         """
@@ -215,6 +223,14 @@ class ProfileManager(ProfileUtils):
                      type(exc), exc, error=True)
             return False
 
+    def verify_joinable(self) -> bool:
+        """
+        temp docstring
+        """
+        self.log(f"accessing dsuserver and got {self.profile.dsuserver}",
+                 "pm verify joinable")
+        return self.profile.dsuserver is not None
+
 class PostManager(ProfileManager):
     def edit_bio(self, content: str) -> bool:
         """
@@ -307,17 +323,10 @@ class PostManager(ProfileManager):
             content, time = self._get_post_info(i)
             yield content, time
 
-    def verify_joinable(self) -> bool:
-        """
-        temp docstring
-        """
-        self.log(f"accessing dsuserver and got {self.profile.dsuserver}",
-                 "pm verify joinable")
-        return self.profile.dsuserver is not None
-
 class DmManager(ProfileManager):
     def __init__(self, username: str, admin: bool = False) -> None:
         super().__init__(username, admin)
+        self.loaded_friend: Friend = None
 
     def _init_profile(self, username: str) -> bool:
         """
@@ -332,6 +341,33 @@ class DmManager(ProfileManager):
             self.log("failure when opening profile",
                      "pm init messenger", type(exc), exc, error=True)
             return False
+
+    def load_friend(self, friend: str) -> bool:
+        '''
+        set loaded_friend to the username we loaded
+        '''
+        names = [i.get_name() for i in self.friends]
+        try:
+            index = names.index(friend)
+        except ValueError:
+            return False
+        self.loaded_friend = self.friends[index]
+        return True
+
+    def save_friend(self) -> bool:
+        names = [i.get_name() for i in self.friends]
+        target_name = self.loaded_friend.get_name()
+        try:
+            index = names.index(target_name)
+            self.friends[index] = self.loaded_friend
+            self.save_profile()
+        except ValueError:
+            ins = self.loaded_friend.get_in_msgs()
+            outs = ins = self.loaded_friend.get_out_msgs()
+            self.add_friend(target_name, ins, outs)
+        else:
+            return True
+        return False
 
     def fetch_friends(self) -> list[Friend]:
         return self.friends
@@ -348,8 +384,29 @@ class DmManager(ProfileManager):
         self.save_profile()
         return friend
 
-    def load_texts(self, friend: Friend) -> list[Post]:
-        raise NotImplementedError
+    def load_texts(self) -> list[tuple[Post, str]]:
+        my_name = self.profile.username
+        thr_name = self.loaded_friend.get_name()
 
-    def add_text(self, text: Post) -> bool:
-        raise NotImplementedError
+        raw_me = self.loaded_friend.get_out_msgs()
+        raw_thr = self.loaded_friend.get_in_msgs()
+
+        paired_my_texts = [(i, my_name) for i in raw_me] if raw_me else []
+        paired_thr_texts = [(i, thr_name) for i in raw_thr] if raw_thr else []
+
+        paired_texts = paired_my_texts + paired_thr_texts
+        paired_texts.sort(key=lambda dm: dm[0].get_time())
+
+        return paired_texts
+
+    def add_text(self, text: str, recipient: bool = True) -> bool:
+        new_text = Post(text)
+        if recipient:
+            current_in_msgs = self.loaded_friend.get_in_msgs()
+            current_in_msgs.append(new_text)
+            self.loaded_friend.set_in_msgs(current_in_msgs)
+        else:
+            current_out_msgs = self.loaded_friend.get_out_msgs()
+            current_out_msgs.append(new_text)
+            self.loaded_friend.set_out_msgs(current_out_msgs)
+        self.save_friend()

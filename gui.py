@@ -9,11 +9,12 @@ Docstring
 '''
 
 from typing import Callable
+from time import time as get_time
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QLabel, QGridLayout, QPlainTextEdit)
 from PySide6.QtCore import Qt
 from ds_profile_manager import DsuManager, PostManager, DmManager
-from ds_messenger import PostPublisher as Client
+from ds_messenger import PostPublisher, DirectMessenger
 from gui_prompts import PromptGenerator as pg
 from gui_prompts import TxtDsu, TxtPrf, TxtMsg
 
@@ -48,6 +49,27 @@ class ProfileMenu(QWidget):
         layout.addWidget(add_row_button, 0, 0)
         layout.addWidget(self.profile_table, 1, 0, 1, 2)
         self.setLayout(layout)
+
+    def _login_server(self, pm: PostManager) -> DirectMessenger:
+        if not pm.verify_joinable():
+            host = pg().get_host_prompt().get_response()
+            if not host:
+                return None
+            port = pg().get_port_prompt().get_response()
+            if not port:
+                return None
+            pm.log(f"got host:port {host}:{port}", "join button handler")
+            if not pm.update_server_info(host, port):
+                return None
+
+        server, port, username, password = pm.get_server_info()
+        client = DirectMessenger(server, port)
+        if not client.login(username, password):
+            pm.update_server_info(reset=True)
+            pm.log(f"failed to join server {server}:{port}",
+                   "join button handler", True, username, password)
+            return None
+        return client
 
     def _create_row(self, name: str) -> None:
         '''
@@ -145,7 +167,11 @@ class ProfileMenu(QWidget):
                     if value in loaded_dms:
                         pm.log(f"Already loaded {value}.",
                                "access messenger button handler")
-                    messenger = MessengerWindow(value)
+                    post_man = PostManager(value)
+                    client = self._login_server(post_man)
+                    if not client:
+                        return None
+                    messenger = MessengerWindow(value, client)
                     if messenger.loaded:
                         messenger.resize(600, 500)
                         messenger.setWindowTitle(TxtPrf.WINDOW_PROFILE)
@@ -238,7 +264,7 @@ class ProfileWindow(QWidget):
         for pos, i in enumerate(items):
             self.post_table.setItemWidget(item, pos + 1, i)
 
-    def _login_server(self, pm: PostManager) -> Client:
+    def _login_server(self, pm: PostManager) -> PostPublisher:
         if not pm.verify_joinable():
             host = pg().get_host_prompt().get_response()
             if not host:
@@ -251,7 +277,7 @@ class ProfileWindow(QWidget):
                 return None
 
         server, port, username, password = pm.get_server_info()
-        client = Client(server, port)
+        client = PostPublisher(server, port)
         if not client.login(username, password):
             pm.update_server_info(reset=True)
             pm.log(f"failed to join server {server}:{port}",
@@ -329,9 +355,12 @@ class MessengerWindow(QWidget):
     '''
     temp docstring
     '''
-    def __init__(self, name: str, admin: bool = False) -> None:
+    def __init__(self, name: str, client: DirectMessenger,
+                 admin: bool = False) -> None:
         super().__init__()
         self.admin = admin
+        self.client = client
+        self.loaded_friend = None
 
         self.message_manager = DmManager(name, self.admin)
         if not self.message_manager.loaded:
@@ -357,7 +386,7 @@ class MessengerWindow(QWidget):
                                      "messenger init")
             self._add_friend_row(i.get_name())
 
-        self.message_table =QTreeWidget()
+        self.message_table = QTreeWidget()
         self.message_table.setHeaderHidden(True)
 
         layout = QGridLayout(self)
@@ -366,15 +395,56 @@ class MessengerWindow(QWidget):
         layout.addWidget(self.text_editor, 1, 1)
         layout.addWidget(send_button, 2, 1)
         layout.addWidget(add_friend_button, 2, 0)
-        
+
         self.setLayout(layout)
 
     def _add_friend_row(self, friend):
         item = QTreeWidgetItem(self.friend_table, [friend])
+        selection = self.friend_table.selectionModel()
+        handler = self._select_friend_gen(friend, item)
+        selection.selectionChanged.connect(handler)
         self.friend_table.setItemWidget(item, 0, QLabel(friend))
 
+    def _select_friend_gen(self, friend: str, item: QTreeWidgetItem):
+        mm = self.message_manager
+        def handler():
+            if not item.isSelected():
+                return
+            username = friend
+            if not mm.load_friend(username):
+                return
+            messages = mm.load_texts()
+            self.message_table.clear()
+            for i in messages:
+                message_sender = i[1]
+                message_post = i[0]
+                text = message_post.get_entry()
+                time = mm.convert_time(message_post.get_time(), get_time())
+                left = message_sender == username
+                self._add_msg_row(text, self.message_table, time, left)
+
+        return handler
+
+    def _add_msg_row(self, text, table: QTreeWidget,
+                     timestamp: str, left: bool = True):
+        item = QTreeWidgetItem(table, [text])
+        label = QLabel(timestamp + "\n" + text)
+        alignment = Qt.AlignLeft if left else Qt.AlignRight
+        label.setAlignment(alignment)
+        table.setItemWidget(item, 0, label)
+
+    def _clear_msgs(self):
+        mt = self.message_table
+        mt.clear()
+
     def _send_handler(self):
-        pass
+        friend = self.message_manager.loaded_friend.get_name()
+        current_text = self.text_editor.toPlainText()
+        #if not self.client.send(current_text, friend):
+        #    return  # give indication to user we have failed!
+        self.text_editor.setPlainText('')
+        self.message_manager.add_text(current_text, False)
+        self._add_msg_row(current_text, self.message_table, "Now:", left=False)
 
     def _add_friend_button_handler(self):
         '''
@@ -387,6 +457,11 @@ class MessengerWindow(QWidget):
         self._add_friend_row(friend)
         self.message_manager.add_friend(friend)
         return  # Should give feedback to the user if successful or not
+
+    def _get_new_messages(self):
+        messages = self.client.retrieve_new()
+        
+        print(type(messages))
 
 
 def main_gui():
