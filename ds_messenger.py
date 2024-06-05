@@ -24,10 +24,24 @@ class DirectMessage:
         self.timestamp = None
 
     def set_message(self, text, time = get_time()) -> None:
+        '''
+        Given a message, update the DirectMessage message and timestamp.
+
+        Parameters
+        --------
+        text : str
+            The string we should set the message to.
+        time : float
+            The time to set the message to, in seconds from epoch.
+            Defaults to current time.
+        '''
         self.message = text
         self.timestamp = time
 
     def set_recipient(self, name) -> None:
+        '''
+        Given a name, update the DirectMessage recipient.
+        '''
         self.recipient = name
 
 class DsuUtils:
@@ -78,7 +92,8 @@ class DsuUtils:
         self._connect_to_server()
         if not self.socket:
             print("Could not connect to server.")
-            return dsp.Response(None, "disconnected", "Could not connect to server!", None, None)
+            return dsp.Response(None, "disconnected",
+                                "Could not connect to server!", None, None)
 
         conn = dsp.init(self.socket)
         resp = dsp.send_command(conn, command)

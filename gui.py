@@ -3,6 +3,9 @@
 # 80752008
 
 # pylint: disable = no-name-in-module
+# pylint: disable = invalid-name
+# invalid names are disabled for two instances, redefining already existing
+# methods which don't follow the naming convention either.
 
 '''
 Docstring
@@ -26,7 +29,7 @@ MAIN_HEIGHT = 400
 # MAIN PROFILE MENU
 class ProfileMenu(QWidget):
     '''
-    Ttemp docstring
+    Main GUI for selecting which profile to access.
     '''
     def __init__(self):
         super().__init__()
@@ -37,6 +40,9 @@ class ProfileMenu(QWidget):
         self._draw()
 
     def _draw(self) -> None:
+        '''
+        Draws all elements of the GUI
+        '''
         self.profile_table = QTreeWidget()  # create a table w 3 cols
         self.profile_table.setColumnCount(4)
         self.profile_table.setHeaderHidden(True)
@@ -55,6 +61,12 @@ class ProfileMenu(QWidget):
         self.setLayout(layout)
 
     def _login_server(self, pm: PostManager) -> DirectMessenger:
+        '''
+        Checks if server is joinable via PostManager, before attempting
+        to create and return DirectMessenger client.
+
+        If user has not joined, gets prompts for ip and port.
+        '''
         if not pm.verify_joinable():
             host = pg().get_host_prompt().get_response()
             if not host:
@@ -88,16 +100,15 @@ class ProfileMenu(QWidget):
         '''
         item = QTreeWidgetItem(self.profile_table, [name])
         access_button = QPushButton(TxtDsu.BUTTON_ACCESS_PROFILE, self)
-        access_button.clicked.connect(self._generate_button_handler(1, name))
+        access_button.clicked.connect(self._access_prof_handler_gen(name))
         self.profile_table.setItemWidget(item, 1, access_button)
 
         chat_button = QPushButton(TxtDsu.BUTTON_MESSAGES_PROFILE, self)
-        chat_button.clicked.connect(self._generate_button_handler(3, name))
+        chat_button.clicked.connect(self._access_msg_handler_gen(name))
         self.profile_table.setItemWidget(item, 2, chat_button)
 
         delete_button = QPushButton(TxtDsu.BUTTON_DELETE_PROFILE, self)
-        delete_button.clicked.connect(
-            self._generate_button_handler(2, name, item))
+        delete_button.clicked.connect(self._del_prof_handler_gen(name, item))
         self.profile_table.setItemWidget(item, 3, delete_button)
 
     # def admin_toggle_handler(self) -> None:  DEPRECATED, admin disabled
@@ -124,76 +135,83 @@ class ProfileMenu(QWidget):
         self.dsu_manager.create_profile(username, password)
         return  # Should give feedback to the user if successful or not
 
-    def _generate_button_handler(self, version: int, value: str,
-                                 item: QTreeWidgetItem = None
-                                 ) -> Callable[..., None]:
-        parent = self.profile_table
-        profiles = self.profiles
-        pm = self.dsu_manager
-        loaded_profiles = self.loaded_profiles
-        loaded_dms = self.loaded_dms
-        match version:
-            case 1:
-                def access_profile_handler():
-                    if value in loaded_profiles:
-                        pm.log(f"Already loaded {value}.",
-                               "access profile button handler")
-                        loaded_profiles[value].close()
-                    profile_viewer = ProfileWindow(value)
-                    if profile_viewer.loaded:
-                        profile_viewer.resize(600, 500)
-                        profile_viewer.setWindowTitle(value)
-                        profile_viewer.show()
-                        pm.log(f"Viewing {value}",
-                               "access profile button handler")
-                        loaded_profiles[value] = profile_viewer
-                    else:
-                        pm.log(f"Unable to load {value}.",
-                               "access profile button handler")
-                return access_profile_handler
-            case 2:
-                def delete_profile_handler():
-                    if pm.delete_profile(value):
-                        index = parent.indexOfTopLevelItem(item)  # get row
-                        pm.log(f"successfully deleted {value} at {index}",
-                               "delete profile button handler")
-                        parent.takeTopLevelItem(index)  # remove at index
-                        profiles.remove(value)
-                        if value in loaded_profiles:  # close deleted profile
-                            loaded_profiles[value].close()
-                        if value in loaded_dms:
-                            loaded_dms[value].close()
-                    else:
-                        pass  # Should give feedback to the user
-                return delete_profile_handler
-            case 3:
-                def access_messenger_handler():
-                    if value in loaded_dms:
-                        pm.log(f"Already loaded {value}.",
-                               "access messenger button handler")
-                        loaded_dms[value].close()
-                    post_man = PostManager(value)
-                    client = self._login_server(post_man)
-                    if not client:
-                        return None
-                    messenger = MessengerWindow(value, client)
-                    if messenger.loaded:
-                        messenger.resize(600, 500)
-                        messenger.setWindowTitle(value)
-                        messenger.show()
-                        pm.log(f"Viewing {value}",
-                               "access messenger button handler")
-                        loaded_dms[value] = messenger
-                    else:
-                        pm.log(f"Unable to load {value}.",
-                               "access messenger button handler")
-                return access_messenger_handler
+    def _access_prof_handler_gen(self, value: str) -> Callable[..., None]:
+        '''
+        Given the username of that row, returns a function to open that
+        username's associated profile via ProfileWindow.
+        '''
+        def access_profile_handler():
+            if value in self.loaded_profiles:
+                self.dsu_manager.log(f"Already loaded {value}.",
+                        "access profile button handler")
+                self.loaded_profiles[value].close()
+            profile_viewer = ProfileWindow(value)
+            if profile_viewer.loaded:
+                profile_viewer.resize(600, 500)
+                profile_viewer.setWindowTitle(value)
+                profile_viewer.show()
+                self.dsu_manager.log(f"Viewing {value}",
+                        "access profile button handler")
+                self.loaded_profiles[value] = profile_viewer
+            else:
+                self.dsu_manager.log(f"Unable to load {value}.",
+                        "access profile button handler")
+        return access_profile_handler
 
+    def _del_prof_handler_gen(self, value: str, item: QTreeWidgetItem = None
+                            ) -> Callable[..., None]:
+        '''
+        Given the username of that row, returns a function to delete
+        the username's associated profile and close any opened windows.
+        '''
+        def delete_profile_handler():
+            if self.dsu_manager.delete_profile(value):
+                index = self.profile_table.indexOfTopLevelItem(item)
+                self.dsu_manager.log(f"deleted {value} at {index}",
+                        "delete profile button handler")
+                self.profile_table.takeTopLevelItem(index)
+                self.profiles.remove(value)
+                if value in self.loaded_profiles:
+                    self.loaded_profiles[value].close()
+                if value in self.loaded_dms:
+                    self.loaded_dms[value].close()
+            else:
+                pass  # Should give feedback to the user
+        return delete_profile_handler
+
+    def _access_msg_handler_gen(self, value: str) -> Callable[..., None]:
+        '''
+        Given the username of that row, returns a function to open that
+        username's associated DMs via MessengeWindow.
+        '''
+        def access_messenger_handler():
+            if value in self.loaded_dms:
+                self.dsu_manager.log(f"Already loaded {value}.",
+                        "access messenger button handler")
+                self.loaded_dms[value].close()
+            post_man = PostManager(value)
+            client = self._login_server(post_man)
+            if not client:
+                return None
+            messenger = MessengerWindow(value, client)
+            if messenger.loaded:
+                messenger.resize(600, 500)
+                messenger.setWindowTitle(value)
+                messenger.show()
+                self.dsu_manager.log(f"Viewing {value}",
+                        "access messenger button handler")
+                self.loaded_dms[value] = messenger
+            else:
+                self.dsu_manager.log(f"Unable to load {value}.",
+                        "access messenger button handler")
+            return True
+        return access_messenger_handler
 
 # PROFILE VIEWER
 class ProfileWindow(QWidget):
     '''
-    temp docstring
+    Main GUI for managing profile, like editing bio, managing posts, etc.
+    Requires name of user to load profile.
     '''
     def __init__(self, name: str, admin: bool = False) -> None:
         super().__init__()
@@ -207,6 +225,9 @@ class ProfileWindow(QWidget):
         self._draw()
 
     def _draw(self) -> None:
+        '''
+        Draws all GUI elements.
+        '''
         self.post_table = QTreeWidget()
         self.post_table.setColumnCount(5)
         self.post_table.setHeaderLabels([TxtPrf.HEADER_POST,
@@ -258,19 +279,26 @@ class ProfileWindow(QWidget):
         item = QTreeWidgetItem(self.post_table, [content])
 
         edit_button = QPushButton(TxtPrf.BUTTON_EDIT_POST, self)
-        edit_button.clicked.connect(self._generate_button_handler(1, item))
+        edit_button.clicked.connect(self._edit_handler_gen(item))
 
         publish_button = QPushButton(TxtPrf.BUTTON_PUBLISH_POST, self)
-        publish_button.clicked.connect(self._generate_button_handler(3, item))
+        publish_button.clicked.connect(self._pub_handler_gen(item))
 
         delete_button = QPushButton(TxtPrf.BUTTON_DELETE_POST, self)
-        delete_button.clicked.connect(self._generate_button_handler(2, item))
+        delete_button.clicked.connect(self._del_handler_gen(item))
 
         items = [QLabel(time), edit_button, publish_button, delete_button]
         for pos, i in enumerate(items):
             self.post_table.setItemWidget(item, pos + 1, i)
 
     def _login_server(self, pm: PostManager) -> PostPublisher:
+        '''
+        Checks if server is joinable via PostManager, before attempting
+        to create and return PostPublisher client.
+
+        If user has not joined, gets prompts for ip and port. If fails
+        to connect, resets given info to allow user to try again.
+        '''
         if not pm.verify_joinable():
             host = pg().get_host_prompt().get_response()
             if not host:
@@ -324,37 +352,33 @@ class ProfileWindow(QWidget):
         self.profile_manager.log("made changes, reload program",
                                  "modify usn/pw button handler")
 
-    def _generate_button_handler(self, version: int,
-                                 item: QTreeWidgetItem) -> Callable[..., None]:
-        parent = self.post_table
-        pm = self.profile_manager
+    def _edit_handler_gen(self, item: QTreeWidgetItem) -> Callable[..., None]:
+        def edit_handler():
+            index = self.post_table.indexOfTopLevelItem(item)
+            post = self.profile_manager.index_post(index)
+            content = pg().get_edit_post_prompt(post[0]).get_response()
+            if content:
+                self.profile_manager.edit_post(index, content)
+                self.post_table.setItemWidget(item, 0, QLabel(content))
+        return edit_handler
 
-        match version:
-            case 1:  # editing a post
-                def edit_handler():
-                    index = parent.indexOfTopLevelItem(item)
-                    post = pm.index_post(index)
-                    content = pg().get_edit_post_prompt(post[0]).get_response()
-                    if content:
-                        pm.edit_post(index, content)
-                        parent.setItemWidget(item, 0, QLabel(content))
-                return edit_handler
-            case 2:  # deleting a post
-                def delete_handler():
-                    index = parent.indexOfTopLevelItem(item)
-                    parent.takeTopLevelItem(index)  # remove at that index
-                    pm.del_post(index)
-                    self.profile_manager.log(f"successfully post at {index}",
-                                             "delete post button handler")
-                return delete_handler
-            case 3:  # publishing a post
-                def publish_handler():  # first fetch mandatory send commands
-                    index = parent.indexOfTopLevelItem(item)
-                    post = pm.index_post(index)
-                    client = self._login_server(pm)
-                    if client:
-                        client.publish_post(post[0])
-                    return publish_handler
+    def _del_handler_gen(self, item: QTreeWidgetItem) -> Callable[..., None]:
+        def delete_handler():
+            index = self.post_table.indexOfTopLevelItem(item)
+            self.post_table.takeTopLevelItem(index)  # remove index
+            self.profile_manager.del_post(index)
+            self.profile_manager.log(f"successfully post at {index}",
+                                        "delete post button handler")
+        return delete_handler
+
+    def _pub_handler_gen(self, item: QTreeWidgetItem) -> Callable[..., None]:
+        def publish_handler():  # first fetch mandatory send commands
+            index = self.post_table.indexOfTopLevelItem(item)
+            post = self.profile_manager.index_post(index)
+            client = self._login_server(self.profile_manager)
+            if client:
+                client.publish_post(post[0])
+        return publish_handler
 
 
 class MessengerWindow(QWidget):
@@ -535,14 +559,23 @@ class MessengerWindow(QWidget):
         return new_target_messages
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        self.timer.stop()
+        '''
+        Stops timer when window closes to stop pinging server.
+        '''
+        self.timer.stop()  # NOTE: Does not follow snake case due to PySide
         event.accept()
 
 
 class EPlainTextEdit(QPlainTextEdit):
+    '''
+    Subclass of QPlainTextEdit with signal connection for key press.
+    '''
     key_pressed = Signal(int)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
+        '''
+        On key press, sends signal key_pressed.
+        '''
         super(EPlainTextEdit, self).keyPressEvent(event)
         self.key_pressed.emit(event.key())
 
