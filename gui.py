@@ -383,7 +383,8 @@ class ProfileWindow(QWidget):
 
 class MessengerWindow(QWidget):
     '''
-    temp docstring
+    Main GUI to message other users. Add friends via button at bottom, select
+    friends to send messages to, send and receive messages.
     '''
     def __init__(self, name: str, client: DirectMessenger,
                  admin: bool = False) -> None:
@@ -405,6 +406,9 @@ class MessengerWindow(QWidget):
             self.timer.start(1000)
 
     def _draw(self) -> None:
+        '''
+        Draws all GUI elements.
+        '''
         self.friend_table = QTreeWidget()
         self.friend_table.setHeaderHidden(True)
         self.friend_table.setRootIsDecorated(False)
@@ -458,6 +462,9 @@ class MessengerWindow(QWidget):
         layout.addLayout(footer_layout)
 
     def _add_friend_row(self, friend: str):
+        '''
+        Given the name of a friend, adds them to the friend tree to select
+        '''
         item = QTreeWidgetItem(self.friend_table, [friend])
         selection = self.friend_table.selectionModel()
         handler = self._select_friend_gen(friend, item)
@@ -465,6 +472,9 @@ class MessengerWindow(QWidget):
         self.friend_table.setItemWidget(item, 0, QLabel(friend))
 
     def _select_friend_gen(self, friend: str, item: QTreeWidgetItem):
+        '''
+        Generates handler for selecting a friend.
+        '''
         mm = self.message_manager
         def handler():
             if not item.isSelected():
