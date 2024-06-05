@@ -10,9 +10,10 @@ Docstring
 
 from typing import Callable
 from time import time as get_time
+from PySide6.QtGui import QCloseEvent, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
     QPushButton, QWidget, QLabel, QGridLayout, QPlainTextEdit)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer, QEvent ,Signal
 from ds_profile_manager import DsuManager, PostManager, DmManager
 from ds_messenger import PostPublisher, DirectMessenger
 from gui_prompts import PromptGenerator as pg
@@ -135,10 +136,11 @@ class ProfileMenu(QWidget):
                     if value in loaded_profiles:
                         pm.log(f"Already loaded {value}.",
                                "access profile button handler")
+                        loaded_profiles[value].close()
                     profile_viewer = ProfileWindow(value)
                     if profile_viewer.loaded:
                         profile_viewer.resize(600, 500)
-                        profile_viewer.setWindowTitle(TxtPrf.WINDOW_PROFILE)
+                        profile_viewer.setWindowTitle(value)
                         profile_viewer.show()
                         pm.log(f"Viewing {value}",
                                "access profile button handler")
@@ -167,6 +169,7 @@ class ProfileMenu(QWidget):
                     if value in loaded_dms:
                         pm.log(f"Already loaded {value}.",
                                "access messenger button handler")
+                        loaded_dms[value].close()
                     post_man = PostManager(value)
                     client = self._login_server(post_man)
                     if not client:
@@ -174,7 +177,7 @@ class ProfileMenu(QWidget):
                     messenger = MessengerWindow(value, client)
                     if messenger.loaded:
                         messenger.resize(600, 500)
-                        messenger.setWindowTitle(TxtPrf.WINDOW_PROFILE)
+                        messenger.setWindowTitle(value)
                         messenger.show()
                         pm.log(f"Viewing {value}",
                                "access messenger button handler")
@@ -368,12 +371,19 @@ class MessengerWindow(QWidget):
             return  # handler for if unabe to load profile
         self.loaded = True
         self._draw()
+        self._get_new_messages()
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._update_msgs)
+        if not self.timer.isActive():
+            self.timer.start(1000)
 
     def _draw(self) -> None:
         self.friend_table = QTreeWidget()
         self.friend_table.setHeaderHidden(True)
 
-        self.text_editor = QPlainTextEdit()
+        self.text_editor = EPlainTextEdit()
+        self.text_editor.setPlaceholderText(TxtMsg.EDITOR_PROMPT_MSG)
+        self.text_editor.key_pressed.connect(self._enter_handler)
 
         send_button = QPushButton(TxtMsg.BUTTON_SEND_MSG)
         send_button.clicked.connect(self._send_handler)
@@ -395,10 +405,11 @@ class MessengerWindow(QWidget):
         layout.addWidget(self.text_editor, 1, 1)
         layout.addWidget(send_button, 2, 1)
         layout.addWidget(add_friend_button, 2, 0)
+        layout.setRowStretch(2,1)
 
         self.setLayout(layout)
 
-    def _add_friend_row(self, friend):
+    def _add_friend_row(self, friend: str):
         item = QTreeWidgetItem(self.friend_table, [friend])
         selection = self.friend_table.selectionModel()
         handler = self._select_friend_gen(friend, item)
@@ -437,31 +448,75 @@ class MessengerWindow(QWidget):
         mt = self.message_table
         mt.clear()
 
+    def _update_msgs(self):
+        friend = self.message_manager.loaded_friend
+        target = friend.get_name() if friend else None
+        new_msgs = self._get_new_messages(target)
+        for i in new_msgs:
+            time = self.message_manager.convert_time(i[1], get_time())
+            self._add_msg_row(i[0], self.message_table, time)
+
     def _send_handler(self):
+        if not self.message_manager.loaded_friend:
+            return  # user attempted to send while nothing loaded
         friend = self.message_manager.loaded_friend.get_name()
-        current_text = self.text_editor.toPlainText()
-        #if not self.client.send(current_text, friend):
-        #    return  # give indication to user we have failed!
+        current_text = self.text_editor.toPlainText().replace("\n", "")
+        raw_time = get_time()
+        if not self.client.send(current_text, friend):
+            return  # give indication to user we have failed!
         self.text_editor.setPlainText('')
-        self.message_manager.add_text(current_text, False)
-        self._add_msg_row(current_text, self.message_table, "Now:", left=False)
+        self.message_manager.add_text(current_text, raw_time, recipient=False)
+        time = self.message_manager.convert_time(raw_time, raw_time - 1)
+        self._add_msg_row(current_text, self.message_table, time, left=False)
+
+    def _enter_handler(self, key):
+        if key == Qt.Key.Key_Return:
+            self._send_handler()
 
     def _add_friend_button_handler(self):
         '''
         Prompt the user via dialog boxes for a username of a friend.
         '''
-        friend = pg().get_friend_prompt().get_response()
+        your_username = self.message_manager.profile.username
+        friend = pg().get_friend_prompt(your_username).get_response()
 
         if not friend:
             return
+
         self._add_friend_row(friend)
         self.message_manager.add_friend(friend)
         return  # Should give feedback to the user if successful or not
 
-    def _get_new_messages(self):
+    def _get_new_messages(self, target: str = None
+                          ) -> list[tuple[str]]:
         messages = self.client.retrieve_new()
+        messages.sort(key=lambda message: message.recipient)
+        recipient = ''
+        new_target_messages = []
+        for i in messages:
+            if recipient != i.recipient:
+                recipient = i.recipient
+                if not self.message_manager.load_friend(recipient):
+                    self._add_friend_row(recipient)
+                    self.message_manager.add_friend(recipient)
+            message = i.message
+            timestamp = i.timestamp
+            self.message_manager.add_text(message, timestamp)
+            if recipient == target:
+                new_target_messages.append((message, timestamp))
+        return new_target_messages
 
-        print(type(messages))
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.timer.stop()
+        event.accept()
+
+
+class EPlainTextEdit(QPlainTextEdit):
+    key_pressed = Signal(int)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        super(EPlainTextEdit, self).keyPressEvent(event)
+        self.key_pressed.emit(event.key())
 
 
 def main_gui():

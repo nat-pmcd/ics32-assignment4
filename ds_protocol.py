@@ -10,7 +10,8 @@ import json
 import socket
 from collections import namedtuple
 
-Response = namedtuple('Response', ['response', 'type', 'message', 'token'])
+Response = namedtuple('Response', ['response', 'type', 'message',
+                                   'messages', 'token'])
 Connection = namedtuple('Connection', ['socket', 'send', 'recv'])
 
 
@@ -27,7 +28,6 @@ def init(sock: socket) -> Connection:
     try:
         f_send = sock.makefile('w')
         f_recv = sock.makefile('r')
-        print("Initiated connection")
         return Connection(sock, f_send, f_recv)
     except OSError as exc:
         print(f"Invalid socket connection, {exc}: {type(exc)}")
@@ -82,10 +82,11 @@ def _extract_json(json_msg: str) -> Response:
 
         response = json_obj['response']
         message_type = response['type']
-        message = response['message'] if 'message' in response else response['messages']
+        message = response['message'] if 'message' in response else ''
+        messages = response['messages'] if 'messages' in response else ''
         token = response['token'] if 'token' in response else None
 
-        return Response(response, message_type, message, token)
+        return Response(response, message_type, message, messages, token)
     except json.JSONDecodeError:
         print("Json cannot be decoded.", json_msg)
     except KeyError:

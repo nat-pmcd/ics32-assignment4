@@ -12,7 +12,7 @@ from time import time as get_time
 import ds_protocol as dsp
 PORT = 6000
 SERVER = "localhost"
-
+LATENCY = 0
 
 class DirectMessage:
     """
@@ -23,9 +23,12 @@ class DirectMessage:
         self.message = None
         self.timestamp = None
 
-    def set_message(self, text) -> None:
+    def set_message(self, text, time = get_time()) -> None:
         self.message = text
-        self.timestamp = get_time()
+        self.timestamp = time
+
+    def set_recipient(self, name) -> None:
+        self.recipient = name
 
 class DsuUtils:
     """
@@ -77,7 +80,8 @@ class DsuUtils:
 
         conn = dsp.init(self.socket)
         resp = dsp.send_command(conn, command)
-        print("Sent", command, "and received", resp)
+        if resp.message or resp.messages:
+            print("Sent", command, "and received", resp)
         dsp.close_conn(conn)
 
         if resp.type == "error":
@@ -159,7 +163,16 @@ class DirectMessenger(DsuUtils):
                            r'"}')
         response = self._send_command(request_command)
 
-        return response.message if response.type != "error" else False
+        if response.type == "error":
+            return None
+
+        all_messages = []
+        for i in response.messages:
+            message = DirectMessage()
+            message.set_message(i['message'], float(i['timestamp']) - LATENCY)
+            message.set_recipient(i['from'])
+            all_messages.append(message)
+        return all_messages
 
     def send(self, message: str, recipient: str) -> bool:
         """
@@ -184,9 +197,9 @@ class DirectMessenger(DsuUtils):
                            message +
                            r'","recipient": "' +
                            recipient +
-                           r'","timestamp": "' +
-                           str(time()) +
-                           r'"}}')
+                           r'","timestamp": ' +
+                           str(get_time()) +
+                           r'}}')
         response = self._send_command(dm_command)
 
         return response.type != "error"
@@ -235,7 +248,7 @@ class PostPublisher(DsuUtils):
                        r'", "bio": {"entry": "' +
                        bio +
                        r'","timestamp": "' +
-                       str(time()) + r'"}}')
+                       str(get_time()) + r'"}}')
         response = self._send_command(bio_command)
 
         return response.type != "error"
@@ -257,7 +270,7 @@ class PostPublisher(DsuUtils):
                            r'", "post": {"entry": "' +
                            msg +
                            r'","timestamp": "' +
-                           str(time()) +
+                           str(get_time()) +
                            r'"}}')
         response = self._send_command(publish_command)
 

@@ -9,6 +9,7 @@ temp docstring
 from pathlib import Path
 from datetime import datetime
 from ds_profile import Profile, Post, Friend
+from time import time as get_time
 
 DIRECTORY_NAME = "dsu_profiles"
 
@@ -44,12 +45,13 @@ class ProfileUtils:
         time = self.convert_time(post.get_time())
         return content, time
 
-    def convert_time(self, int_time: int, current: int = 0):
-        time = datetime.fromtimestamp(int_time)
+    def convert_time(self, inp_time: str, current: int = 0):
+        int_time = int(float(inp_time))
+        time = datetime.fromtimestamp(int(int_time))
         if current == 0:  # full timestamp
             strtime = time.strftime('%Y/%m/%d %H:%M')
         elif current - int_time < 43200:  # only month and day
-            strtime = time.strftime('%H:%M')
+            strtime = time.strftime('%H:%M:%S')
         elif current - int_time < 15811200:  # only month and day
             strtime = time.strftime('%M %d')
         else:  # year month day
@@ -382,6 +384,7 @@ class DmManager(ProfileManager):
         new_friend = Friend(friend, out_msg, in_msg)
         self.profile.add_friend(new_friend)
         self.save_profile()
+        self.loaded_friend = new_friend
         return friend
 
     def load_texts(self) -> list[tuple[Post, str]]:
@@ -399,8 +402,10 @@ class DmManager(ProfileManager):
 
         return paired_texts
 
-    def add_text(self, text: str, recipient: bool = True) -> bool:
+    def add_text(self, text: str, timestamp: float = get_time(),
+                 recipient: bool = True) -> bool:
         new_text = Post(text)
+        new_text.set_time(timestamp)
         if recipient:
             current_in_msgs = self.loaded_friend.get_in_msgs()
             current_in_msgs.append(new_text)

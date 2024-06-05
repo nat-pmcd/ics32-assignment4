@@ -58,8 +58,12 @@ class MsgEnglish:
     '''
     WINDOW_MSG = 'ICS 32 DS Messenger'
 
+    HEADER_FRIENDS = 'Your Friends'
+    HEADER_CHATBOX = 'Chat'
+
     BUTTON_ADD_FRIEND = 'Add Friend'
     BUTTON_SEND_MSG = 'Send'
+    EDITOR_PROMPT_MSG = 'Type a message...'
 
 
 class PromptsEnglish:
@@ -99,3 +103,4 @@ class PromptsEnglish:
     POPUP_HEADER_ADD_FRIEND = 'Add a friend!'
     POPUP_PROMPT_GET_FRIEND = 'Enter friend name.'
     POPUP_PROMPT_GET_FRIEND_BLANK = "You can't be friends with nobody!"
+    POPUP_PROMPT_GET_FRIEND_SELF = "Why are you trying to talk to yourself?"

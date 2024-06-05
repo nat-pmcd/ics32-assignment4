@@ -193,11 +193,13 @@ class PromptGenerator:
         prompt.set_default_text(DEFAULT_PORT)
         return prompt
 
-    def get_friend_prompt(self):
+    def get_friend_prompt(self, lst: list):
         '''
         temp docstring
         '''
-        prompt = UserPrompt(TxtPmt.POPUP_HEADER_ADD_FRIEND,
+        prompt = UniquePrompt(TxtPmt.POPUP_HEADER_ADD_FRIEND,
                             TxtPmt.POPUP_PROMPT_GET_FRIEND,
-                            TxtPmt.POPUP_PROMPT_GET_FRIEND_BLANK)
+                            TxtPmt.POPUP_PROMPT_GET_FRIEND_BLANK,
+                            TxtPmt.POPUP_PROMPT_GET_FRIEND_SELF)
+        prompt.set_duplicate_list(lst)
         return prompt
