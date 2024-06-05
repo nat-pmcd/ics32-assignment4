@@ -8,7 +8,7 @@ and PostPublisher to send bio and posts to server.
 """
 
 import socket
-from time import time as get_time
+from time import time as get_time  # I hope we can import this? For timestamp?
 import ds_protocol as dsp
 PORT = 6000
 SERVER = "localhost"
