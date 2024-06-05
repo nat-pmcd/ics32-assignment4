@@ -3,7 +3,7 @@
 # 80752008
 
 """
-temp docstring
+Contains PostManager and DmManager to manage posts and messages in .dsu files.
 """
 
 from pathlib import Path
