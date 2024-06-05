@@ -433,7 +433,7 @@ class MessengerWindow(QWidget):
         self.message_table.setHeaderHidden(True)
         self.message_table.setRootIsDecorated(False)
         self.message_table.setStyleSheet("padding: 5 5px;")
-        self._add_msg_row('', '')
+        self._add_msg_row(TxtMsg.LABEL_FRIEND, TxtMsg.LABEL_START)
 
         chat_layout = QVBoxLayout()
         chat_layout.addWidget(self.message_table, stretch=4)
