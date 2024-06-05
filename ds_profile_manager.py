@@ -16,7 +16,7 @@ DIRECTORY_NAME = "dsu_profiles"
 
 class ProfileUtils:
     '''
-    Class containing several methods used by multiple 
+    Class containing several methods used by multiple additional classes
     '''
     def __init__(self, admin: bool = False) -> None:
         self.admin = admin
@@ -71,7 +71,7 @@ class ProfileUtils:
         return direc_path / Path(usn + ".dsu") if usn else direc_path
 
     def _create_profile(self, usn: str = None, pw: str = None,
-                       profile: Profile = None) -> bool:
+                        profile: Profile = None) -> bool:
         """
         Given a username and password, creates and saves that profile
         to a new .dsu file. If profile is given instead, saves that
@@ -100,7 +100,6 @@ class ProfileUtils:
         except Exception as exc:
             print(f"Unexpected {exc}: {type(exc)}")
             raise
-
 
     def _fetch_profiles(self) -> list[str]:
         """
@@ -235,6 +234,7 @@ class ProfileManager(ProfileUtils):
                  "pm verify joinable")
         return self.profile.dsuserver is not None
 
+
 class PostManager(ProfileManager):
     '''
     Manages editing profile's bio, username, password, and posts.
@@ -328,6 +328,7 @@ class PostManager(ProfileManager):
         for i in self.posts:
             content, time = self._get_post_info(i)
             yield content, time
+
 
 class DmManager(ProfileManager):
     '''

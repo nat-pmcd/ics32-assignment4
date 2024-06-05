@@ -14,9 +14,9 @@ Docstring
 from typing import Callable
 from time import time as get_time
 from PySide6.QtGui import QCloseEvent, QKeyEvent
-from PySide6.QtWidgets import (QApplication, QTreeWidget, QTreeWidgetItem,
-    QPushButton, QHBoxLayout, QWidget, QLabel, QGridLayout, QPlainTextEdit,
-    QVBoxLayout)
+from PySide6.QtWidgets import (QVBoxLayout, QWidget, QLabel, QPushButton,
+                               QHBoxLayout, QGridLayout, QPlainTextEdit,
+                               QApplication, QTreeWidget, QTreeWidgetItem)
 from PySide6.QtCore import Qt, QTimer, Signal
 from ds_profile_manager import DsuManager, PostManager, DmManager
 from ds_messenger import PostPublisher, DirectMessenger
@@ -26,7 +26,7 @@ from gui_prompts import TxtDsu, TxtPrf, TxtMsg
 MAIN_WIDTH = 450
 MAIN_HEIGHT = 400
 
-# MAIN PROFILE MENU
+
 class ProfileMenu(QWidget):
     '''
     Main GUI for selecting which profile to access.
@@ -142,24 +142,17 @@ class ProfileMenu(QWidget):
         '''
         def access_profile_handler():
             if value in self.loaded_profiles:
-                self.dsu_manager.log(f"Already loaded {value}.",
-                        "access profile button handler")
                 self.loaded_profiles[value].close()
             profile_viewer = ProfileWindow(value)
             if profile_viewer.loaded:
                 profile_viewer.resize(600, 500)
                 profile_viewer.setWindowTitle(value)
                 profile_viewer.show()
-                self.dsu_manager.log(f"Viewing {value}",
-                        "access profile button handler")
                 self.loaded_profiles[value] = profile_viewer
-            else:
-                self.dsu_manager.log(f"Unable to load {value}.",
-                        "access profile button handler")
         return access_profile_handler
 
     def _del_prof_handler_gen(self, value: str, item: QTreeWidgetItem = None
-                            ) -> Callable[..., None]:
+                              ) -> Callable[..., None]:
         '''
         Given the username of that row, returns a function to delete
         the username's associated profile and close any opened windows.
@@ -167,16 +160,12 @@ class ProfileMenu(QWidget):
         def delete_profile_handler():
             if self.dsu_manager.delete_profile(value):
                 index = self.profile_table.indexOfTopLevelItem(item)
-                self.dsu_manager.log(f"deleted {value} at {index}",
-                        "delete profile button handler")
                 self.profile_table.takeTopLevelItem(index)
                 self.profiles.remove(value)
                 if value in self.loaded_profiles:
                     self.loaded_profiles[value].close()
                 if value in self.loaded_dms:
                     self.loaded_dms[value].close()
-            else:
-                pass  # Should give feedback to the user
         return delete_profile_handler
 
     def _access_msg_handler_gen(self, value: str) -> Callable[..., None]:
@@ -186,8 +175,6 @@ class ProfileMenu(QWidget):
         '''
         def access_messenger_handler():
             if value in self.loaded_dms:
-                self.dsu_manager.log(f"Already loaded {value}.",
-                        "access messenger button handler")
                 self.loaded_dms[value].close()
             post_man = PostManager(value)
             client = self._login_server(post_man)
@@ -198,16 +185,11 @@ class ProfileMenu(QWidget):
                 messenger.resize(600, 500)
                 messenger.setWindowTitle(value)
                 messenger.show()
-                self.dsu_manager.log(f"Viewing {value}",
-                        "access messenger button handler")
                 self.loaded_dms[value] = messenger
-            else:
-                self.dsu_manager.log(f"Unable to load {value}.",
-                        "access messenger button handler")
             return True
         return access_messenger_handler
 
-# PROFILE VIEWER
+
 class ProfileWindow(QWidget):
     '''
     Main GUI for managing profile, like editing bio, managing posts, etc.
@@ -349,9 +331,6 @@ class ProfileWindow(QWidget):
         if password:
             self.profile_manager.edit_pw(password)
 
-        self.profile_manager.log("made changes, reload program",
-                                 "modify usn/pw button handler")
-
     def _edit_handler_gen(self, item: QTreeWidgetItem) -> Callable[..., None]:
         def edit_handler():
             index = self.post_table.indexOfTopLevelItem(item)
@@ -367,8 +346,6 @@ class ProfileWindow(QWidget):
             index = self.post_table.indexOfTopLevelItem(item)
             self.post_table.takeTopLevelItem(index)  # remove index
             self.profile_manager.del_post(index)
-            self.profile_manager.log(f"successfully post at {index}",
-                                        "delete post button handler")
         return delete_handler
 
     def _pub_handler_gen(self, item: QTreeWidgetItem) -> Callable[..., None]:
@@ -477,6 +454,7 @@ class MessengerWindow(QWidget):
         Generates handler for selecting a friend.
         '''
         mm = self.message_manager
+
         def handler():
             if not item.isSelected():
                 return

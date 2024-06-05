@@ -6,6 +6,7 @@
 Localization for GUI in English
 '''
 
+
 class DsuEnglish:
     '''
     Contains all English text inside the DSU Manager window.

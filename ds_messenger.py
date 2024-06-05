@@ -14,6 +14,7 @@ PORT = 6000
 SERVER = "localhost"
 LATENCY = 0
 
+
 class DirectMessage:
     """
     Stores message information.
@@ -23,7 +24,7 @@ class DirectMessage:
         self.message = None
         self.timestamp = None
 
-    def set_message(self, text, time = get_time()) -> None:
+    def set_message(self, text, time=get_time()) -> None:
         '''
         Given a message, update the DirectMessage message and timestamp.
 
@@ -44,11 +45,12 @@ class DirectMessage:
         '''
         self.recipient = name
 
+
 class DsuUtils:
     """
     Manages server connection, authentication, and sending/receiving messages.
     Requires server (string) and port (int)
-    
+
     Parameters
     --------
     server : str
@@ -126,7 +128,7 @@ class DsuUtils:
     def login(self, username: str, password: str) -> bool:
         """
         Sends the login command to the server, to set token attribute for
-        authentication. Returns if successful or not. If not connected to 
+        authentication. Returns if successful or not. If not connected to
         server, attempts to connect first.
 
         Parameters
@@ -159,7 +161,7 @@ class DsuUtils:
 class DirectMessenger(DsuUtils):
     """
     Manages connection, to send and receive DMs.
-    
+
     Parameters
     --------
     server : str
@@ -170,7 +172,7 @@ class DirectMessenger(DsuUtils):
     def _get_dms(self, only_new: bool = False) -> list[DirectMessage]:
         """
         Gets directmessages from connected server and returns list.
-        
+
         Parameters
         --------
         only_new : bool
@@ -204,7 +206,7 @@ class DirectMessenger(DsuUtils):
         """
         Sends the directmessage command to the server.
         Returns if successful or not.
-        
+
         Parameters
         --------
         message : str
@@ -221,14 +223,14 @@ class DirectMessenger(DsuUtils):
             return False
 
         dm_command = (r'{"token":"' +
-                           self.token +
-                           r'", "directmessage": {"entry": "' +
-                           message +
-                           r'","recipient": "' +
-                           recipient +
-                           r'","timestamp": ' +
-                           str(get_time()) +
-                           r'}}')
+                      self.token +
+                      r'", "directmessage": {"entry": "' +
+                      message +
+                      r'","recipient": "' +
+                      recipient +
+                      r'","timestamp": ' +
+                      str(get_time()) +
+                      r'}}')
         response = self._send_command(dm_command)
 
         return response.type == "ok"
@@ -252,7 +254,7 @@ class PostPublisher(DsuUtils):
     """
     Manages connection, to publish post and bio.
     Requires server (string) and port (int)
-    
+
     Parameters
     --------
     server : str

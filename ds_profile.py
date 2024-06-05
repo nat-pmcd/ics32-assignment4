@@ -17,6 +17,7 @@ import json
 import time
 from pathlib import Path
 
+
 class DsuFileError(Exception):
     """
     DsuFileError is a custom exception handler that you should catch in your
@@ -34,12 +35,11 @@ class DsuProfileError(Exception):
 
 
 class Post(dict):
-    """ 
+    """
     The Post class is responsible for working with individual user posts.
     It currently  supports two features: A timestamp property that is set
     upon instantiation and when the entry object is set and an entry property
     that stores the post message.
-
     """
     def __init__(self, entry: str = None, timestamp: float = 0):
         self._timestamp = timestamp
@@ -51,7 +51,7 @@ class Post(dict):
 
     def set_entry(self, entry):
         """
-        Sets the post's self to the given parameter 
+        Sets the post's self to the given parameter
         """
         self._entry = entry
         dict.__setitem__(self, 'entry', entry)
@@ -157,7 +157,6 @@ class Profile(dict):
     properties exposed by this class. A Profile class should ensure that a
     username and password are set, but contains no conventions to do so. You
     should make sure that your code verifies that required properties are set.
-
     """
 
     def __init__(self, dsuserver=None, username=None, password=None):
@@ -173,8 +172,8 @@ class Profile(dict):
         add_post accepts a Post object as parameter and appends it to the posts
         list. Posts are stored in a list object in the order they are added. So
         if multiple Posts objects are created, but added to the Profile in a
-        different order, it is possible for the list to not be sorted by the 
-        Post.timestamp property. So take caution as to how you implement your 
+        different order, it is possible for the list to not be sorted by the
+        Post.timestamp property. So take caution as to how you implement your
         add_post code.
         """
         self._posts.append(post)
@@ -182,7 +181,7 @@ class Profile(dict):
     def del_post(self, index: int) -> bool:
         """
         del_post removes a Post at a given index and returns True if successful
-        and False if an invalid index was supplied. 
+        and False if an invalid index was supplied.
 
         To determine which post to delete you must implement your own search
         operation on the posts returned from the get_posts function to find the
@@ -207,7 +206,7 @@ class Profile(dict):
         friend list. Friends are stored in a list object in the order they are
         added. So if multiple Friend objects are created, but added to the
         Profile in a different order, it is possible for the list to not be
-        sorted by the Post.timestamp property. So take caution as to how you 
+        sorted by the Post.timestamp property. So take caution as to how you
         implement your add_friend code.
         """
         self._friends.append(friend)
@@ -215,7 +214,7 @@ class Profile(dict):
     def del_friend(self, index: int) -> bool:
         """
         del_friend removes a Friend at a given index and returns True if
-        successful and False if an invalid index was supplied. 
+        successful and False if an invalid index was supplied.
 
         To determine which friend to delete you must implement your own
         search operation on the posts returned from the get_friend function to
@@ -263,7 +262,7 @@ class Profile(dict):
         load_profile will populate the current instance of Profile with data
         stored in a DSU file.
 
-        Example usage: 
+        Example usage:
 
         profile = Profile()
         profile.load_profile('/path/to/file.dsu')

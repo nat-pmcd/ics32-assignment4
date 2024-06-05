@@ -18,6 +18,7 @@ TxtPrf = us_eng.ProfileEnglish
 TxtMsg = us_eng.MsgEnglish
 TxtPmt = us_eng.PromptsEnglish
 
+
 class UserPrompt(QInputDialog):
     """
     Class for user prompt, to check if input is blank or not.
@@ -124,7 +125,6 @@ class PromptGenerator:
         prompt.set_duplicate_list(other_usernames)
         return prompt
 
-
     def get_password_prompt(self):
         '''
         Prompt for getting password in profile creation.
@@ -133,7 +133,6 @@ class PromptGenerator:
                             TxtPmt.POPUP_PROMPT_GET_PW,
                             TxtPmt.POPUP_PROMPT_GET_PW_BLANK)
         return prompt
-
 
     def get_post_prompt(self):
         '''
@@ -144,7 +143,6 @@ class PromptGenerator:
                             TxtPmt.POPUP_PROMPT_GET_CONTENT_BLANK)
         return prompt
 
-
     def get_bio_prompt(self):
         '''
         Prompt for getting bio in bio editing.
@@ -153,7 +151,6 @@ class PromptGenerator:
                             TxtPmt.POPUP_PROMPT_GET_BIO,
                             TxtPmt.POPUP_PROMPT_GET_BIO_BLANK)
         return prompt
-
 
     def get_edit_username_prompt(self):
         '''
@@ -165,7 +162,6 @@ class PromptGenerator:
                             "USERNAME CANNOT BE BLANK")
         return prompt
 
-
     def get_edit_password_prompt(self):
         '''
         Prompt for getting password in editing login.
@@ -175,7 +171,6 @@ class PromptGenerator:
                             "ENTER PASSWORD",
                             "PASSWORD CANNOT BE BLANK")
         return prompt
-
 
     def get_edit_post_prompt(self, past_post):
         '''
@@ -213,8 +208,8 @@ class PromptGenerator:
         Prompt for getting friend when adding friend.
         '''
         prompt = UniquePrompt(TxtPmt.POPUP_HEADER_ADD_FRIEND,
-                            TxtPmt.POPUP_PROMPT_GET_FRIEND,
-                            TxtPmt.POPUP_PROMPT_GET_FRIEND_BLANK,
-                            TxtPmt.POPUP_PROMPT_GET_FRIEND_SELF)
+                              TxtPmt.POPUP_PROMPT_GET_FRIEND,
+                              TxtPmt.POPUP_PROMPT_GET_FRIEND_BLANK,
+                              TxtPmt.POPUP_PROMPT_GET_FRIEND_SELF)
         prompt.set_duplicate_list(lst)
         return prompt
