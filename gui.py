@@ -502,6 +502,7 @@ class MessengerWindow(QWidget):
         Handler for pressing enter or pressing send button.
         '''
         if not self.message_manager.loaded_friend:
+            self.status_label.setText(TxtMsg.STATUS_SELECT)
             return  # user attempted to send while nothing loaded
         friend = self.message_manager.loaded_friend.get_name()
         current_text = self.text_editor.toPlainText().replace("\n", "")
