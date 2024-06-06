@@ -509,7 +509,7 @@ class MessengerWindow(QWidget):
         raw_time = get_time()
         if not self.client.send(current_text, friend):
             self.status_label.setText(TxtMsg.STATUS_STOP)
-            return  # give indication to user we have failed!
+            return
         self.text_editor.setPlainText('')
         self.message_manager.add_text(current_text, raw_time, recipient=False)
         time = self.message_manager.convert_time(raw_time, raw_time - 1)
