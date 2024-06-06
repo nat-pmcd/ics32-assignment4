@@ -69,6 +69,7 @@ class MsgEnglish:
     STATUS_OK = 'Connected to server'
     STATUS_BAD = 'Connection failed, retrying...'
     STATUS_LOG = 'Error when logging in! Incorrect credentials?'
+    STATUS_STOP = 'Failed to send message! Try again in a second...'
     LABEL_START = 'To get started, select a friend on the left.'
     LABEL_FRIEND = 'Or add a new friend down below!'
 
