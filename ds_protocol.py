@@ -138,7 +138,7 @@ def _send_response(conn: Connection, command: str) -> bool:
         The connection we're sending with.
     """
     try:
-        conn.send.write(command + "\r\n")
+        conn.send.write(str(command) + "\r\n")
         conn.send.flush()
         return True
     except OSError as exc:

@@ -74,10 +74,10 @@ class DsuUtils:
         """
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            address = self.server, self.port
+            address = str(self.server), int(self.port)
             self.socket.connect(address)
             return True
-        except (OSError, TimeoutError) as exc:
+        except (OSError, TimeoutError, ValueError) as exc:
             print(f"Unexpected {exc}: {type(exc)}")
             self.socket = None
             return False
@@ -139,8 +139,8 @@ class DsuUtils:
         password : str
             The `password` of the account we're logging into
         """
-        self._usn = username
-        self._pw = password
+        self._usn = str(username)
+        self._pw = str(password)
 
         if not self.socket and not self._connect_to_server():
             self.error = "connection"
@@ -311,3 +311,15 @@ class PostPublisher(DsuUtils):
         response = self._send_command(publish_command)
 
         return response.type != "error"
+
+# DSU_ADDRESS = "168.235.86.101", 3021
+# ip, port = DSU_ADDRESS
+# dm = DirectMessenger(ip, port)
+# dm.login("s24testuser5", "123")
+# string = ' '
+# print(dm.retrieve_all())
+# print(dm.send(string, "s24testuser4"))
+
+# second = DirectMessenger(ip, port)
+# second.login("s24testuser4", "123")
+# print(second.retrieve_new())
