@@ -1,5 +1,5 @@
 # ics32-assignment4
-Final project for ICS 32, wooo!
+Final project for ICS 32, wooo! Opens a profile browser, which you may select a profile to either publish posts, send messages, or delete the profile.
 
 ## ds_protocol.py
 Given a socket, supports sending and receiving commands to server.
