@@ -5,7 +5,6 @@
 """
 Tests DirectMessenger and DirectMessage.
 Hey, we should test private methods, right?
-python -m pytest --cov=ds_messenger (file)
 """
 
 import unittest
@@ -20,6 +19,15 @@ class DirectMessageTest(unittest.TestCase):
     '''
     Unit tests for DirectMessage
     '''
+    def test_dm(self):
+        '''
+        tests initializing DirectMessage
+        '''
+        dm = DirectMessage()
+        assert dm.message is None
+        assert dm.recipient is None
+        assert dm.timestamp is None
+
     def test_set_recipient(self):
         '''
         Testing setting the recipient.

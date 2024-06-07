@@ -32,6 +32,9 @@ def init(sock: socket) -> Connection:
     except OSError as exc:
         print(f"Invalid socket connection, {exc}: {type(exc)}")
         return None
+    except AttributeError as exc:
+        print(f"Invalid socket! {exc}: {type(exc)}")
+        return None
 
 
 def send_command(conn: Connection, command: str) -> Response:
@@ -91,7 +94,8 @@ def _extract_json(json_msg: str) -> Response:
         print("Json cannot be decoded.", json_msg)
     except KeyError:
         print("Json isn't complete.")
-    return Response(json_msg, "error", "Client error extracting json", None)
+    return Response(json_msg, "error",
+                    "Client error extracting json", None, None)
 
 
 def close_conn(conn: Connection) -> bool:
@@ -103,8 +107,12 @@ def close_conn(conn: Connection) -> bool:
     conn : Connection
         The connection to close.
     """
-    conn.send.close()
-    conn.recv.close()
+    try:
+        conn.send.close()
+        conn.recv.close()
+        return True
+    except AttributeError:
+        return False
 
 
 def _read_response(conn: Connection) -> Response:

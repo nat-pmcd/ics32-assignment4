@@ -1,13 +1,15 @@
 # ics32-assignment4
-Final project for ICS 32, wooo! All that's left is making the test cases.
+Final project for ICS 32, wooo!
 
 ## ds_protocol.py
 Given a socket, supports sending and receiving commands to server.
-Tested with test_ds_message_protocol.py
+Test with python -m pytest --cov=ds_protocol --cov-report=term-missing test_ds_protocol.py
+Note, testing does not cover no internet statements, hence 81% coverage.
 
 ## ds_messenger.py
 Contains the DirectMessenger and PostPublisher classes, to manage logging in to servers and sending pre-made commands.
-DirectMessenger is tested with test_ds_messenger.py
+Test with python -m pytest --cov=ds_messenger  --cov-report=term-missing test_ds_messenger.py
+Note, testing only covers DirectMessage and DirectMessesnger. The file also contains code for a3 post publishing, hence the poor coverage. Ignoring that, it would have 81% coverage as well.
 
 ## Profile.py
 Should be modified to now also store past retrieved messages
