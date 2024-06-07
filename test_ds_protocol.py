@@ -39,7 +39,6 @@ class InitTest(unittest.TestCase):
         conn = dsp.init(sock)
         assert dsp.close_conn(conn)
 
-
     def test_close_invalid(self):
         '''
         testing close with
@@ -120,12 +119,12 @@ class ReadJson(unittest.TestCase):
         '''
         msg_type = 'ok'
         messages = [
-            {"message":"Hello User 1!",
-             "from":"markb",
-             "timestamp":"1603167689.3928561"},
-            {"message":"Bzzzzz",
-             "from":"thebeemoviescript",
-             "timestamp":"1603167689.3928561"}
+            {"message": "Hello User 1!",
+             "from": "markb",
+             "timestamp": "1603167689.3928561"},
+            {"message": "Bzzzzz",
+             "from": "thebeemoviescript",
+             "timestamp": "1603167689.3928561"}
         ]
         messagse_str = [str(i) for i in messages]
         msg = ", ".join(messagse_str).replace("'", '"')
