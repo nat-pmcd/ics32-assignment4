@@ -135,6 +135,7 @@ class VerifyNonblankTest(unittest.TestCase):
         string = "  \n  \n  "
         assert not self._blank_test(string)
 
+
 class LoginTest(unittest.TestCase):
     '''
     Unit tests for DirectMessenger login method
@@ -149,7 +150,7 @@ class LoginTest(unittest.TestCase):
         '''
         Unit test for invalid logins
         '''
-        invalid_logins =[
+        invalid_logins = [
             ("Bob", "123"),  # wrong password
             (" ", " "),  # nonsense blank login
             ("s24testuser", "1234"),  # wrong password
@@ -162,7 +163,7 @@ class LoginTest(unittest.TestCase):
         '''
         Unit test for valid logins
         '''
-        valid_logins =[  # all profiles i've used
+        valid_logins = [  # all profiles i've used
             ("s24testuser", "123"),
             ("s24testuser1", "123"),
             ("s24testuser2", "123"),
