@@ -5,6 +5,8 @@
 """
 Tests DirectMessenger and DirectMessage.
 Hey, we should test private methods, right?
+python -m pytest --cov=ds_messenger
+"C:\Users\jonat\Downloads\python\git repos\ics32-assignment4\test_ds_messenger.py"
 """
 
 import unittest
