@@ -8,7 +8,7 @@
 # methods which don't follow the naming convention either.
 
 '''
-Docstring
+All GUI code
 '''
 
 from typing import Callable
